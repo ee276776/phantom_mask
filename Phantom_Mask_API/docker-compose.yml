@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 資料庫
+  database:
+    image: postgres:15
+    container_name: phantom-mask-db
+    environment:
+      POSTGRES_DB: phantom_mask
+      POSTGRES_USER: phantom_user
+      POSTGRES_PASSWORD: SecurePass123!
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../ETL/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - phantom-mask-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U phantom_user -d phantom_mask"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PhantomMask ETL
+  phantom-mask-etl:
+    build:
+      context: ../ETL
+      dockerfile: Dockerfile
+    container_name: phantom-mask-etl
+    environment:
+      - ConnectionStrings__EncryptedDefaultConnection=SG9zdD1kYXRhYmFzZTtEYXRhYmFzZT1waGFudG9tX21hc2s7VXNlcm5hbWU9cGhhbnRvbV91c2VyO1Bhc3N3b3JkPVNlY3VyZVBhc3MxMjMhO1BvcnQ9NTQzMg==
+      - Security__EncryptionKey=PhantomMask2025SecretKey
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - phantom-mask-network
+    volumes:
+      - ../pharmacies.json:/app/data/pharmacies.json:ro
+      - ../users.json:/app/data/users.json:ro
+
+  # PhantomMask API
+  phantom-mask-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: phantom-mask-api
+    ports:
+      - "8080:80"     # HTTP 端口映射到主機的 8080
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__EncryptedDefaultConnection=SG9zdD1kYXRhYmFzZTtEYXRhYmFzZT1waGFudG9tX21hc2s7VXNlcm5hbWU9cGhhbnRvbV91c2VyO1Bhc3N3b3JkPVNlY3VyZVBhc3MxMjMhO1BvcnQ9NTQzMg==
+      - Security__EncryptionKey=PhantomMask2025SecretKey
+    depends_on:
+      database:
+        condition: service_healthy
+      phantom-mask-etl:
+        condition: service_completed_successfully
+    networks:
+      - phantom-mask-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  phantom-mask-network:
+    driver: bridge

@@ -1,0 +1,46 @@
+services:
+  database:
+    image: postgres:15
+    container_name: phantom-mask-db
+    environment:
+      POSTGRES_DB: phantom_mask
+      POSTGRES_USER: phantom_user
+      POSTGRES_PASSWORD: SecurePass123!
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U phantom_user -d phantom_mask"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - phantom-mask-network
+
+  etl-app:
+    build: .
+    container_name: phantom-mask-etl
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      - ConnectionStrings__EncryptedDefaultConnection=SG9zdD1kYXRhYmFzZTtEYXRhYmFzZT1waGFudG9tX21hc2s7VXNlcm5hbWU9cGhhbnRvbV91c2VyO1Bhc3N3b3JkPVNlY3VyZVBhc3MxMjMhO1BvcnQ9NTQzMg==
+      - Security__EncryptionKey=PhantomMask2025SecretKey
+      - ASPNETCORE_ENVIRONMENT=Production
+    volumes:
+      - ../users.json:/app/data/users.json:ro
+      - ../pharmacies.json:/app/data/pharmacies.json:ro
+    networks:
+      - phantom-mask-network
+    restart: "no"
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  phantom-mask-network:
+    driver: bridge

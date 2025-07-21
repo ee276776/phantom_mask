@@ -1,0 +1,38 @@
+# Build artifacts
+bin/
+obj/
+out/
+
+# Visual Studio
+.vs/
+.vscode/
+*.user
+*.suo
+*.cache
+
+# Logs
+logs/
+*.log
+
+# Runtime files
+appsettings.Development.json
+*.db
+*.db-shm
+*.db-wal
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Documentation
+README.md
+*.md
+
+# OS files
+.DS_Store
+Thumbs.db
