@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using PhantomMaskAPI.Data;
 using PhantomMaskAPI.Models.Entities;
 using PhantomMaskAPI.Interfaces;
+using PhantomMaskAPI.Models.DTOs;
 
 namespace PhantomMaskAPI.Repositories
 {
@@ -57,6 +58,17 @@ namespace PhantomMaskAPI.Repositories
                 .ToListAsync();
         }
 
+        public async Task UpdateBalanceByIdAsync(int pharmacyId, decimal newBalance)
+        {
+            var user = await _dbSet.FirstOrDefaultAsync(u => u.Id == pharmacyId);
+            if (user != null)
+            {
+                user.CashBalance = newBalance;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+
         public async Task<List<Pharmacy>> GetPharmaciesByStockCriteriaAsync(decimal minPrice, decimal maxPrice, int stockThreshold, string comparison)
         {
             var query = _dbSet
@@ -73,5 +85,11 @@ namespace PhantomMaskAPI.Repositories
 
             return await query.ToListAsync();
         }
+
+
+
+        
+
+
     }
 }

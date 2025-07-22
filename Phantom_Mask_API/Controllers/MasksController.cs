@@ -9,12 +9,15 @@ namespace PhantomMaskAPI.Controllers
     public class MasksController : ControllerBase
     {
         private readonly IMaskService _maskService;
+        private readonly IMaskRepository _maskRepository;
         private readonly ILogger<MasksController> _logger;
 
         public MasksController(
             IMaskService maskService,
+            IMaskRepository maskRepository,
             ILogger<MasksController> logger)
         {
+            _maskRepository = maskRepository;
             _maskService = maskService;
             _logger = logger;
         }
@@ -89,6 +92,8 @@ namespace PhantomMaskAPI.Controllers
                     return BadRequest("操作必須是 'increase' 或 'decrease'");
                 }
 
+              
+                
                 var updatedMask = await _maskService.UpdateMaskStockAsync(id, stockUpdate);
                 if (updatedMask == null)
                 {
@@ -150,6 +155,29 @@ namespace PhantomMaskAPI.Controllers
             {
                 _logger.LogError(ex, $"取得低庫存口罩時發生錯誤");
                 return StatusCode(500, "伺服器錯誤");
+            }
+        }
+
+        /// <summary>
+        /// 新增或更新多筆口罩資訊（依據藥局）
+        /// </summary>
+        /// <param name="pharmacyId">藥局 ID</param>
+        /// <param name="maskDto">口罩資料列表</param>
+        [HttpPost("upsert")]
+        public async Task<ActionResult<List<MaskDto>>> UpsertMask(int pharmacyId, [FromBody] List<MaskUpsertDto> maskDto)
+        {
+            if (maskDto == null || !maskDto.Any())
+                return BadRequest("請提供至少一筆口罩資料");
+
+            try
+            {
+                var result = await _maskService.UpsertMasksAsync(pharmacyId, maskDto);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"新增或更新藥局 {pharmacyId} 的口罩資料時發生錯誤");
+                return StatusCode(500, "伺服器錯誤，無法處理口罩資料");
             }
         }
     }

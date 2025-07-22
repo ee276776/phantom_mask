@@ -52,6 +52,40 @@ namespace PhantomMaskAPI.Controllers
         }
 
         /// <summary>
+        /// 處理用戶一次向多家藥局購買口罩的購買行為
+        /// </summary>
+        [HttpPost("bulk2")]
+        public async Task<ActionResult<BulkPurchaseResultDto>> ProcessBulkPurchase_(
+            [FromBody] BulkPurchaseDto_ bulkPurchase)
+        {
+            try
+            {
+                if (bulkPurchase.UserId==null)
+                {
+                    return BadRequest("用戶ID不能為空");
+                }
+
+                if (!bulkPurchase.Purchases.Any())
+                {
+                    return BadRequest("購買項目不能為空");
+                }
+
+                var result = await _purchaseService.ProcessBulkPurchaseAsync_(bulkPurchase);
+
+                _logger.LogInformation($"🛒 用戶 {bulkPurchase.UserId} 批量購買結果: {(result.Success ? "成功" : "失敗")}");
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"用戶 {bulkPurchase.UserId} 批量購買時發生錯誤");
+                return StatusCode(500, "伺服器錯誤");
+            }
+        }
+
+
+
+        /// <summary>
         /// 取得用戶購買記錄
         /// </summary>
         [HttpGet("by-user/{userName}")]

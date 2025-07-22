@@ -54,6 +54,39 @@ namespace PhantomMaskAPI.Repositories
             return purchase;
         }
 
+        public async Task<Purchase> CreatePurchaseAsync_(BulkPurchaseItemDto_ purchaseItem, int userId)
+        {
+            var userName = await _context.Users
+                .Where(u => u.Id == userId)
+                .Select(u => u.Name)
+                .FirstOrDefaultAsync();
+            var PharmacyName = await _context.Pharmacies
+                .Where(p => p.Id == purchaseItem.PharmacyId)
+                .Select(p => p.Name)
+                .FirstOrDefaultAsync();
+            var mask = await _context.Masks
+                .Where(m => m.Id == purchaseItem.MaskId)
+                .FirstOrDefaultAsync();
+
+            var purchase = new Purchase
+            {
+                UserName = userName,
+                PharmacyName = PharmacyName,
+                MaskName = mask.Name,
+                TransactionQuantity = purchaseItem.Quantity,
+                TransactionAmount = purchaseItem.Quantity * mask.Price,
+                TransactionDateTime = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _dbSet.Add(purchase);
+            await _context.SaveChangesAsync();
+            return purchase;
+        }
+
+
+
+
         public async Task<List<Purchase>> CreateBulkPurchasesAsync(List<BulkPurchaseItemDto> purchases, string userName)
         {
             var purchaseEntities = new List<Purchase>();

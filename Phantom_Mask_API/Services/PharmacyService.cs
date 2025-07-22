@@ -116,11 +116,59 @@ namespace PhantomMaskAPI.Services
             return result;
         }
 
-        public async Task<List<PharmacyDto>> GetPharmaciesByStockCriteriaAsync(decimal minPrice, decimal maxPrice, int stockThreshold, string comparison)
+        public async Task<List<PharmacyDto>> GetPharmaciesByStockCriteriaAsync_(decimal minPrice, decimal maxPrice, int stockThreshold, string comparison)
         {
             var pharmacies = await _pharmacyRepository.GetPharmaciesByStockCriteriaAsync(minPrice, maxPrice, stockThreshold, comparison);
 
             var result = pharmacies.Select(p => new PharmacyDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                CashBalance = p.CashBalance,
+                OpeningHours = p.OpeningHours,
+                CreatedAt = p.CreatedAt,
+                MaskCount = p.Masks.Count
+            }).ToList();
+
+            _logger.LogInformation($"🏪 符合庫存條件的藥局: {result.Count} 家");
+            return result;
+        }
+        public async Task<List<PharmacyDto>> GetPharmaciesByStockCriteriaAsync(
+            decimal minPrice,
+            decimal maxPrice,
+            int? minStockThreshold,
+            int? maxStockThreshold,
+            bool isInclusive=false)
+        {
+            var pharmacies = await _pharmacyRepository.GetPharmaciesWithMasksAsync();
+
+            var filtered = pharmacies.Where(p =>
+            {
+                int count = p.Masks.Count;
+
+                if (minStockThreshold.HasValue && maxStockThreshold.HasValue)
+                {
+                    return isInclusive
+                        ? count >= minStockThreshold && count <= maxStockThreshold
+                        : count > minStockThreshold && count < maxStockThreshold;
+                }
+                else if (minStockThreshold.HasValue)
+                {
+                    return isInclusive
+                        ? count >= minStockThreshold
+                        : count > minStockThreshold;
+                }
+                else if (maxStockThreshold.HasValue)
+                {
+                    return isInclusive
+                        ? count <= maxStockThreshold
+                        : count < maxStockThreshold;
+                }
+
+                return true; // 若兩者都沒填，代表不過濾庫存數量
+            });
+
+            var result = filtered.Select(p => new PharmacyDto
             {
                 Id = p.Id,
                 Name = p.Name,

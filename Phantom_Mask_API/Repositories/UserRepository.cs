@@ -58,10 +58,24 @@ namespace PhantomMaskAPI.Repositories
                 await _context.SaveChangesAsync();
             }
         }
-
+        public async Task UpdateUserBalanceByIdAsync(int userId, decimal newBalance)
+        {
+            var user = await _dbSet.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user != null)
+            {
+                user.CashBalance = newBalance;
+                await _context.SaveChangesAsync();
+            }
+        }
         public async Task<bool> UserExistsAsync(string userName)
         {
             return await _dbSet.AnyAsync(u => u.Name == userName);
+        }
+
+        
+        public async Task<bool> UserExistsAsync(int userId)
+        {
+            return await _dbSet.AnyAsync(u => u.Id == userId);
         }
 
         public async Task UpdateCashBalanceAsync(int userId, decimal newBalance)

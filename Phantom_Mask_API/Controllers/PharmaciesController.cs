@@ -109,25 +109,55 @@ namespace PhantomMaskAPI.Controllers
             }
         }
 
+        ///// <summary>
+        ///// 列出所有在給定價格範圍內提供一定數量口罩產品的藥店
+        ///// </summary>
+        ///// <param name="minPrice">最低價格</param>
+        ///// <param name="maxPrice">最高價格</param>
+        ///// <param name="stockThreshold">庫存閾值</param>
+        ///// <param name="stockComparison">比較方式 ("above", "below", "between")</param>
+        //[HttpGet("by-stock")]
+        //public async Task<ActionResult<List<PharmacyDto>>> GetPharmaciesByStock(
+        //    [FromQuery] decimal minPrice,
+        //    [FromQuery] decimal maxPrice,
+        //    [FromQuery] int stockThreshold,
+        //    [FromQuery] string stockComparison = "above")
+        //{
+        //    try
+        //    {
+        //        var pharmacies = await _pharmacyService.GetPharmaciesByStockCriteriaAsync_(
+        //            minPrice, maxPrice, stockThreshold, stockComparison);
+        //        _logger.LogInformation($"📊 股票篩選找到 {pharmacies.Count} 間藥局");
+        //        return Ok(pharmacies);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "依庫存篩選藥局時發生錯誤");
+        //        return StatusCode(500, $"篩選藥局時發生錯誤: {ex.Message}");
+        //    }
+        //}
         /// <summary>
         /// 列出所有在給定價格範圍內提供一定數量口罩產品的藥店
         /// </summary>
         /// <param name="minPrice">最低價格</param>
         /// <param name="maxPrice">最高價格</param>
-        /// <param name="stockThreshold">庫存閾值</param>
-        /// <param name="stockComparison">比較方式 ("above", "below", "between")</param>
+        /// <param name="minStockThreshold">最小庫存閾值（可空）</param>
+        /// <param name="maxStockThreshold">最大庫存閾值（可空）</param>
+        /// <param name="isInclusive">是否包含等於（預設 false）</param>
         [HttpGet("by-stock")]
         public async Task<ActionResult<List<PharmacyDto>>> GetPharmaciesByStock(
             [FromQuery] decimal minPrice,
             [FromQuery] decimal maxPrice,
-            [FromQuery] int stockThreshold,
-            [FromQuery] string stockComparison = "above")
+            [FromQuery] int? minStockThreshold = null,
+            [FromQuery] int? maxStockThreshold = null,
+            [FromQuery] bool isInclusive = false)
         {
             try
             {
                 var pharmacies = await _pharmacyService.GetPharmaciesByStockCriteriaAsync(
-                    minPrice, maxPrice, stockThreshold, stockComparison);
-                _logger.LogInformation($"📊 股票篩選找到 {pharmacies.Count} 間藥局");
+                    minPrice, maxPrice, minStockThreshold, maxStockThreshold, isInclusive);
+
+                _logger.LogInformation($"📊 庫存篩選找到 {pharmacies.Count} 間藥局");
                 return Ok(pharmacies);
             }
             catch (Exception ex)
@@ -136,7 +166,6 @@ namespace PhantomMaskAPI.Controllers
                 return StatusCode(500, $"篩選藥局時發生錯誤: {ex.Message}");
             }
         }
-
         /// <summary>
         /// 根據 ID 取得特定藥局
         /// </summary>

@@ -41,6 +41,8 @@ builder.Services.AddScoped<IPharmacyService, PharmacyService>();
 builder.Services.AddScoped<IMaskService, MaskService>();
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
+builder.Services.AddScoped<IRelevanceService, RelevanceService>();
+
 
 // 配置 Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();

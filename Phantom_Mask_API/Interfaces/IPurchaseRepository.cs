@@ -9,6 +9,8 @@ namespace PhantomMaskAPI.Interfaces
         Task<List<Purchase>> GetPurchasesByDateRangeAsync(DateTime startDate, DateTime endDate);
         Task<List<Purchase>> GetPurchasesByPharmacyAsync(string pharmacyName);
         Task<Purchase> CreatePurchaseAsync(BulkPurchaseItemDto purchaseItem, string userName);
+        Task<Purchase> CreatePurchaseAsync_(BulkPurchaseItemDto_ purchaseItem, int userId);
+
         Task<List<Purchase>> CreateBulkPurchasesAsync(List<BulkPurchaseItemDto> purchases, string userName);
         Task<decimal> GetTotalSpentByUserAsync(string userName, DateTime startDate, DateTime endDate);
     }

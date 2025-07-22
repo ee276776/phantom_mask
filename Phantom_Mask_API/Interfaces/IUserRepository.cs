@@ -8,6 +8,10 @@ namespace PhantomMaskAPI.Interfaces
         Task<List<User>> GetUsersWithHighBalanceAsync(decimal minimumBalance);
         Task<List<User>> GetTopSpendersAsync(DateTime startDate, DateTime endDate, int topN);
         Task UpdateUserBalanceAsync(string userName, decimal newBalance);
+        Task UpdateUserBalanceByIdAsync(int userId, decimal newBalance);
+
         Task<bool> UserExistsAsync(string userName);
+        Task<bool> UserExistsAsync(int userId);
+
     }
 }

@@ -10,5 +10,6 @@ namespace PhantomMaskAPI.Interfaces
         Task<List<MaskDto>> BulkUpdateMasksAsync(int pharmacyId, List<BulkMaskUpdateDto> maskUpdates);
         Task<List<MaskDto>> GetLowStockMasksAsync(int threshold = 10);
         Task<List<MaskDto>> GetMasksInPriceRangeAsync(decimal minPrice, decimal maxPrice);
+        Task<List<MaskDto>> UpsertMasksAsync(int pharmacyId, List<MaskUpsertDto> maskUpdates);
     }
 }

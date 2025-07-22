@@ -9,5 +9,6 @@ namespace PhantomMaskAPI.Interfaces
         Task<List<Pharmacy>> SearchPharmaciesAsync(string searchTerm);
         Task<List<Pharmacy>> GetPharmaciesByStockCriteriaAsync(decimal minPrice, decimal maxPrice, int stockThreshold, string comparison);
         Task<List<Pharmacy>> GetPharmaciesWithAvailableStockAsync();
+        Task UpdateBalanceByIdAsync(int pharmacyId, decimal newBalance);
     }
 }

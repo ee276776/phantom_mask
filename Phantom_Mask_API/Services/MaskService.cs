@@ -58,6 +58,8 @@ namespace PhantomMaskAPI.Services
         public async Task<MaskDto?> UpdateMaskStockAsync(int maskId, StockUpdateDto stockUpdate)
         {
             var mask = await _maskRepository.GetByIdAsync(maskId);
+            var pharmacy = await _pharmacyRepository.GetByIdAsync(mask.PharmacyId);
+
             if (mask == null) throw new ArgumentException($"找不到口罩 ID: {maskId}");
 
             int newStock = stockUpdate.Operation.ToLower() switch
@@ -72,7 +74,11 @@ namespace PhantomMaskAPI.Services
                 _logger.LogWarning($"⚠️ 口罩 {maskId} 庫存不足，無法減少 {stockUpdate.Quantity}");
                 newStock = 0;
             }
+            var amount = stockUpdate.Quantity * mask.Price;
+            //進貨代表減少藥局現金餘額，出貨代表增加藥局現金餘額
+            var totalPrice = stockUpdate.Operation.ToLower() == "increase" ? -amount : amount;
 
+            await _pharmacyRepository.UpdateBalanceByIdAsync(pharmacy.Id, pharmacy.CashBalance += totalPrice);
             await _maskRepository.UpdateMaskStockAsync(maskId, newStock);
 
             _logger.LogInformation($"📦 口罩 {maskId} 庫存已{(stockUpdate.Operation == "increase" ? "增加" : "減少")} {stockUpdate.Quantity}，目前庫存: {newStock}");
@@ -89,6 +95,26 @@ namespace PhantomMaskAPI.Services
                 CreatedAt = mask.CreatedAt
             };
         }
+
+        public async Task<List<MaskDto>> UpsertMasksAsync(int pharmacyId, List<MaskUpsertDto> maskUpdates)
+        {
+            var updatedMasks = await _maskRepository.UpsertMasksAsync(pharmacyId, maskUpdates);
+
+            var result = updatedMasks.Select(m => new MaskDto
+            {
+                Id = m.Id,
+                Name = m.Name,
+                Price = m.Price,
+                StockQuantity = m.StockQuantity,
+                PharmacyId = m.PharmacyId,
+                PharmacyName = m.Pharmacy?.Name ?? "",
+                CreatedAt = m.CreatedAt
+            }).ToList();
+
+            _logger.LogInformation($"🛠️ 藥局 {pharmacyId} 上傳 {result.Count} 筆口罩資料（新增或更新）");
+            return result;
+        }
+
 
         public async Task<List<MaskDto>> BulkUpdateMasksAsync(int pharmacyId, List<BulkMaskUpdateDto> maskUpdates)
         {

@@ -20,6 +20,50 @@ namespace PhantomMaskAPI.Repositories
                 .ToListAsync();
         }
 
+        public async Task<bool> CheckStockingEnoughAsync(int maskID,int num)
+        {
+            var mask= await _dbSet.FirstOrDefaultAsync(n => n.Id == maskID);
+            return mask.StockQuantity >= num;
+        }
+
+        public async Task<List<Mask>> UpsertMasksAsync(int pharmacyId, List<MaskUpsertDto> maskUpdates)
+        {
+            var result = new List<Mask>();
+
+            foreach (var dto in maskUpdates)
+            {
+                var existing = await _context.Masks
+                    .FirstOrDefaultAsync(m => m.PharmacyId == pharmacyId && m.Name == dto.Name);
+
+                if (existing != null)
+                {
+                    // 更新現有口罩
+                    existing.Price = dto.Price;
+                    existing.StockQuantity = dto.StockQuantity;
+                    result.Add(existing);
+                }
+                else
+                {
+                    // 新增新口罩
+                    var newMask = new Mask
+                    {
+                        Name = dto.Name,
+                        Price = dto.Price,
+                        StockQuantity = dto.StockQuantity,
+                        PharmacyId = pharmacyId,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.Masks.Add(newMask);
+                    result.Add(newMask);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return result;
+        }
+
+
+
         public async Task<List<Mask>> SearchMasksAsync(string searchTerm)
         {
             return await _dbSet

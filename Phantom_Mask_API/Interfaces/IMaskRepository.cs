@@ -12,5 +12,7 @@ namespace PhantomMaskAPI.Interfaces
         Task UpdateMaskStockAsync(int maskId, int newStock);
         Task<List<Mask>> BulkUpdateMasksAsync(int pharmacyId, List<BulkMaskUpdateDto> maskUpdates);
         Task<List<Mask>> GetLowStockMasksAsync(int threshold = 10);
+        Task<bool> CheckStockingEnoughAsync(int id,int num);
+        Task<List<Mask>> UpsertMasksAsync(int pharmacyId, List<MaskUpsertDto> maskUpdates);
     }
 }

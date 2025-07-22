@@ -8,6 +8,8 @@ namespace PhantomMaskAPI.Interfaces
         Task<PharmacyDto?> GetPharmacyByIdAsync(int id);
         Task<List<MaskDto>> GetPharmacyMasksAsync(int pharmacyId, string? sortBy, string? sortOrder);
         Task<List<PharmacyDto>> SearchPharmaciesAsync(string searchTerm);
-        Task<List<PharmacyDto>> GetPharmaciesByStockCriteriaAsync(decimal minPrice, decimal maxPrice, int stockThreshold, string comparison);
+        Task<List<PharmacyDto>> GetPharmaciesByStockCriteriaAsync_(decimal minPrice, decimal maxPrice, int stockThreshold, string comparison);
+        Task<List<PharmacyDto>> GetPharmaciesByStockCriteriaAsync(decimal minPrice, decimal maxPrice, int? minstockThreshold, int? maxstockThreshold , bool isInclusive);
+
     }
 }

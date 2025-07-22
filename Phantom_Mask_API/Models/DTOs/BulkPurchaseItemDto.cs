@@ -8,4 +8,11 @@ namespace PhantomMaskAPI.Models.DTOs
         public decimal UnitPrice { get; set; }
         public decimal TotalAmount { get; set; }
     }
+
+    public class BulkPurchaseItemDto_
+    {
+        public int PharmacyId { get; set; } 
+        public int MaskId { get; set; }
+        public int Quantity { get; set; }
+    }
 }
