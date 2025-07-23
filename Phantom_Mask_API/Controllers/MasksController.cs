@@ -73,7 +73,7 @@ namespace PhantomMaskAPI.Controllers
         }
 
         /// <summary>
-        /// 更新口罩庫存 - 透過增加或減少來更新現有口罩產品的庫存數量
+        /// [Q6] ※※ 更新口罩庫存 - 透過增加或減少來更新現有口罩產品的庫存數量 ※※
         /// </summary>
         [HttpPut("{id}/stock")]
         public async Task<ActionResult<MaskDto>> UpdateMaskStock(
@@ -159,7 +159,7 @@ namespace PhantomMaskAPI.Controllers
         }
 
         /// <summary>
-        /// 新增或更新多筆口罩資訊（依據藥局）
+        /// [Q7] ※※ 新增或更新多筆口罩資訊 (不含異動藥局現金餘額CashBalance) ※※
         /// </summary>
         /// <param name="pharmacyId">藥局 ID</param>
         /// <param name="maskDto">口罩資料列表</param>

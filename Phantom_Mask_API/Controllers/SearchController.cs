@@ -113,7 +113,7 @@ namespace PhantomMaskAPI.Controllers
         }
 
         /// <summary>
-        /// 執行相關性搜尋。
+        /// [Q8] ※※ 執行相關性搜尋 ※※
         /// </summary>
         /// <param name="query">搜尋關鍵字 (必填)。</param>
         [HttpGet("SearchByRelavance")] // 建議使用更具描述性的 Action 名稱

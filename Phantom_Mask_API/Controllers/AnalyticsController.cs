@@ -20,7 +20,7 @@ namespace PhantomMaskAPI.Controllers
         }
 
         /// <summary>
-        /// 顯示特定日期範圍內購買口罩花費最多的前 N 名用戶
+        /// [Q4] ※※ 顯示特定日期範圍內購買口罩花費最多的前 N 名用戶 ※※
         /// </summary>
         [HttpGet("top-spenders")]
         public async Task<ActionResult<List<TopSpenderDto>>> GetTopSpenders(

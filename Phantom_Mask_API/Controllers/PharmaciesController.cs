@@ -23,7 +23,7 @@ namespace PhantomMaskAPI.Controllers
         }
 
         /// <summary>
-        /// 列出藥局，可選擇依特定時間和/或星期幾進行篩選
+        /// [Q1] ※※ 列出藥局，可選擇依特定時間和/或星期幾進行篩選  ※※
         /// </summary>
         /// <param name="searchName">藥局名稱篩選</param>
         /// <param name="startTime">營業開始時間篩選 (格式: "08:00", 24小時制)</param>
@@ -85,7 +85,7 @@ namespace PhantomMaskAPI.Controllers
         }
 
         /// <summary>
-        /// 列出特定藥局銷售的所有口罩，並可依名稱或價格排序
+        /// [Q2] ※※ 列出特定藥局銷售的所有口罩，並可依名稱或價格排序 ※※
         /// </summary>
         /// <param name="id">藥局ID</param>
         /// <param name="sortBy">排序欄位 ("name" 或 "price")</param>
@@ -136,8 +136,9 @@ namespace PhantomMaskAPI.Controllers
         //        return StatusCode(500, $"篩選藥局時發生錯誤: {ex.Message}");
         //    }
         //}
+
         /// <summary>
-        /// 列出所有在給定價格範圍內提供一定數量口罩產品的藥店
+        /// [Q3] ※※ 列出所有在給定價格範圍內提供一定數量口罩產品的藥店 ※※
         /// </summary>
         /// <param name="minPrice">最低價格</param>
         /// <param name="maxPrice">最高價格</param>
