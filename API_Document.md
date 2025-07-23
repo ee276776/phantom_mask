@@ -7,79 +7,67 @@
 
 ## 目錄
 
-- [Analytics 分析功能](#analytics-分析功能)
-- [Masks 口罩管理](#masks-口罩管理)
-- [Pharmacies 藥局管理](#pharmacies-藥局管理)
-- [Purchases 購買管理](#purchases-購買管理)
-- [Search 搜尋功能](#search-搜尋功能)
+- [核心功能 API](#核心功能-api)
 - [資料模型 (Schemas)](#資料模型-schemas)
 
 ---
 
-## Analytics 分析功能
+## 核心功能 API
 
-### 1. 取得消費最多的用戶排行榜
+### Q1 - 藥局列表查詢
 
-**[Q4] ※※ 顯示特定日期範圍內購買口罩花費最多的前 N 名用戶 ※※**
+**[Q1] ※※ 列出藥局，可選擇依特定時間和/或星期幾進行篩選 ※※**
 
 ```http
-GET /api/Analytics/top-spenders
+GET /api/Pharmacies
 ```
 
 **查詢參數：**
-- `startDate` (string, datetime, 可選): 開始日期
-- `endDate` (string, datetime, 可選): 結束日期
-- `topN` (integer, 預設: 10): 取得前 N 名用戶
+- `searchName` (string, 可選): 藥局名稱篩選
+- `startTime` (string, 可選): 營業開始時間篩選 (格式: "08:00", 24小時制) 
+- `endTime` (string, 可選): 營業結束時間篩選 (格式: "18:00", 24小時制)
+- `dayOfWeek` (integer, 可選): 星期篩選 (1=Mon, 2=Tue, 3=Wed, 4=Thur, 5=Fri, 6=Sat, 7=Sun)
 
 **回應格式：**
 ```json
 [
   {
-    "userName": "string",
-    "totalSpent": 0.0,
-    "totalPurchases": 0,
-    "firstPurchase": "2024-01-01T00:00:00Z",
-    "lastPurchase": "2024-01-01T00:00:00Z"
+    "id": 0,
+    "name": "string",
+    "cashBalance": 0.0,
+    "openingHours": "string", 
+    "createdAt": "2024-01-01T00:00:00Z",
+    "maskTypeCount": 0,
+    "maskTotalCount": 0
   }
 ]
 ```
 
-### 2. 取得購買趨勢分析
+**使用範例：**
+```bash
+# 查詢週一營業且名稱包含"康"的藥局
+curl -X GET "https://api.phantommask.com/api/Pharmacies?searchName=康&dayOfWeek=1"
 
-```http
-GET /api/Analytics/purchase-trends
-```
-
-**查詢參數：**
-- `startDate` (string, datetime, 可選): 開始日期
-- `endDate` (string, datetime, 可選): 結束日期
-
-**回應格式：**
-```json
-{
-  "totalPurchases": 0,
-  "totalRevenue": 0.0,
-  "averageOrderValue": 0.0,
-  "mostPopularMask": "string",
-  "topPharmacy": "string",
-  "startDate": "2024-01-01T00:00:00Z",
-  "endDate": "2024-01-01T00:00:00Z"
-}
+# 查詢早上8點到晚上6點營業的藥局
+curl -X GET "https://api.phantommask.com/api/Pharmacies?startTime=08:00&endTime=18:00"
 ```
 
 ---
 
-## Masks 口罩管理
+### Q2 - 特定藥局口罩列表
 
-### 1. 搜尋口罩
+**[Q2] ※※ 列出特定藥局銷售的所有口罩，並可依名稱或價格排序 ※※**
 
 ```http
-GET /api/Masks/search
+GET /api/Pharmacies/{id}/masks
 ```
 
+**路徑參數：**
+- `id` (integer, 必填): 藥局ID
+
 **查詢參數：**
-- `query` (string, 可選): 搜尋關鍵字
-- `limit` (integer, 預設: 50): 限制回傳數量
+- `sortBy` (string, 預設: "name"): 排序欄位 ("name" 或 "price")
+- `sortOrder` (string, 預設: "asc"): 排序方向 ("asc" 或 "desc")
 
 **回應格式：**
 ```json
@@ -96,125 +84,15 @@ GET /api/Masks/search
 ]
 ```
 
-### 2. 取得特定口罩資訊
-
-```http
-GET /api/Masks/{id}
-```
-
-**路徑參數：**
-- `id` (integer, 必填): 口罩 ID
-
-**回應格式：** 單一口罩物件 (同上)
-
-### 3. 更新口罩庫存
-
-**[Q6] ※※ 更新口罩庫存 - 透過增加或減少來更新現有口罩產品的庫存數量 ※※**
-
-```http
-PUT /api/Masks/{id}/stock
-```
-
-**路徑參數：**
-- `id` (integer, 必填): 口罩 ID
-
-**請求內容：**
-```json
-{
-  "operation": "string",
-  "quantity": 0
-}
-```
-
-### 4. 根據價格範圍取得口罩
-
-```http
-GET /api/Masks/by-price-range
-```
-
-**查詢參數：**
-- `minPrice` (number, 可選): 最低價格
-- `maxPrice` (number, 可選): 最高價格
-
-### 5. 取得低庫存口罩
-
-```http
-GET /api/Masks/low-stock
-```
-
-**查詢參數：**
-- `threshold` (integer, 預設: 10): 庫存閾值
-
-### 6. 批量新增或更新口罩
-
-**[Q7] ※※ 新增或更新多筆口罩資訊 (不含異動藥局現金餘額CashBalance) ※※**
-
-```http
-POST /api/Masks/upsert
-```
-
-**查詢參數：**
-- `pharmacyId` (integer, 可選): 藥局 ID
-
-**請求內容：**
-```json
-[
-  {
-    "name": "string",
-    "price": 0.0,
-    "stockQuantity": 0
-  }
-]
+**使用範例：**
+```bash
+# 取得藥局ID為1的所有口罩，依價格降序排列
+curl -X GET "https://api.phantommask.com/api/Pharmacies/1/masks?sortBy=price&sortOrder=desc"
 ```
 
 ---
 
-## Pharmacies 藥局管理
-
-### 1. 取得藥局列表
-
-**[Q1] ※※ 列出藥局，可選擇依特定時間和/或星期幾進行篩選 ※※**
-
-```http
-GET /api/Pharmacies
-```
-
-**查詢參數：**
-- `searchName` (string, 可選): 藥局名稱篩選
-- `startTime` (string, 可選): 營業開始時間篩選 (格式: "08:00", 24小時制)
-- `endTime` (string, 可選): 營業結束時間篩選 (格式: "18:00", 24小時制)
-- `dayOfWeek` (integer, 可選): 星期篩選 (1=Mon, 2=Tue, 3=Wed, 4=Thur, 5=Fri, 6=Sat, 7=Sun)
-
-**回應格式：**
-```json
-[
-  {
-    "id": 0,
-    "name": "string",
-    "cashBalance": 0.0,
-    "openingHours": "string",
-    "createdAt": "2024-01-01T00:00:00Z",
-    "maskCount": 0
-  }
-]
-```
-
-### 2. 取得特定藥局銷售的口罩
-
-**[Q2] ※※ 列出特定藥局銷售的所有口罩，並可依名稱或價格排序 ※※**
-
-```http
-GET /api/Pharmacies/{id}/masks
-```
-
-**路徑參數：**
-- `id` (integer, 必填): 藥局 ID
-
-**查詢參數：**
-- `sortBy` (string, 預設: "name"): 排序欄位 ("name" 或 "price")
-- `sortOrder` (string, 預設: "asc"): 排序方向 ("asc" 或 "desc")
-
-### 3. 根據庫存條件取得藥局
+### Q3 - 依庫存條件查詢藥局
 
 **[Q3] ※※ 列出所有在給定價格範圍內提供一定數量口罩產品的藥店 ※※**
 
@@ -229,40 +107,51 @@ GET /api/Pharmacies/by-stock
 - `maxStockThreshold` (integer, 可選): 最大庫存閾值
 - `isInclusive` (boolean, 預設: false): 是否包含等於
 
-### 4. 取得特定藥局資訊
+**回應格式：** 藥局陣列 (同Q1)
 
-```http
-GET /api/Pharmacies/{id}
-```
-
-**路徑參數：**
-- `id` (integer, 必填): 藥局 ID
-
-### 5. 批量更新藥局口罩
-
-```http
-POST /api/Pharmacies/{id}/masks/bulk
-```
-
-**路徑參數：**
-- `id` (integer, 必填): 藥局 ID
-
-**請求內容：**
-```json
-[
-  {
-    "maskId": 0,
-    "newStock": 0,
-    "newPrice": 0.0
-  }
-]
+**使用範例：**
+```bash
+# 查詢有價格在10-50元且庫存大於100個口罩的藥局
+curl -X GET "https://api.phantommask.com/api/Pharmacies/by-stock?minPrice=10&maxPrice=50&minStockThreshold=100"
 ```
 
 ---
 
-## Purchases 購買管理
+### Q4 - 消費排行榜
 
-### 1. 批量購買
+**[Q4] ※※ 顯示特定日期範圍內購買口罩花費最多的前 N 名用戶 ※※**
+
+```http
+GET /api/Analytics/top-spenders
+```
+
+**查詢參數：**
+- `startDate` (string, datetime, 可選): 查詢起始日期（包含此日期）
+- `endDate` (string, datetime, 可選): 查詢結束日期（包含此日期）
+- `topN` (integer, 預設: 10): 要取得的前 N 名用戶數量
+
+**回應格式：**
+```json
+[
+  {
+    "userName": "string",
+    "totalSpent": 0.0,
+    "totalPurchases": 0,
+    "firstPurchase": "2024-01-01T00:00:00Z",
+    "lastPurchase": "2024-01-01T00:00:00Z"
+  }
+]
+```
+
+**使用範例：**
+```bash
+# 查詢2024年1月消費前5名用戶
+curl -X GET "https://api.phantommask.com/api/Analytics/top-spenders?startDate=2024-01-01T00:00:00Z&endDate=2024-01-31T23:59:59Z&topN=5"
+```
+
+---
+
+### Q5 - 批量購買
 
 **[Q5] ※※ 處理用戶一次向多家藥局購買口罩的購買行為 ※※**
 
@@ -306,81 +195,112 @@ POST /api/Purchases/bulk
 }
 ```
 
-### 2. 取得用戶購買記錄
-
-```http
-GET /api/Purchases/by-user/{userName}
+**使用範例：**
+```bash
+# 用戶ID為1同時向兩家藥局購買口罩
+curl -X POST "https://api.phantommask.com/api/Purchases/bulk" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": 1,
+    "purchases": [
+      {
+        "pharmacyId": 1,
+        "maskId": 1,
+        "quantity": 5
+      },
+      {
+        "pharmacyId": 2,
+        "maskId": 3,
+        "quantity": 3
+      }
+    ]
+  }'
 ```
-
-**路徑參數：**
-- `userName` (string, 必填): 用戶名稱
-
-### 3. 取得特定日期範圍內的購買記錄
-
-```http
-GET /api/Purchases/by-date-range
-```
-
-**查詢參數：**
-- `startDate` (string, datetime, 可選): 開始日期
-- `endDate` (string, datetime, 可選): 結束日期
-
-### 4. 取得購買分析資料
-
-```http
-GET /api/Purchases/analytics
-```
-
-**查詢參數：**
-- `startDate` (string, datetime, 可選): 開始日期
-- `endDate` (string, datetime, 可選): 結束日期
 
 ---
 
-## Search 搜尋功能
+### Q6 - 更新口罩庫存
 
-### 1. 綜合搜尋
+**[Q6] ※※ 更新口罩庫存 - 透過增加或減少來更新現有口罩產品的庫存數量 ※※**
 
 ```http
-GET /api/Search
+PUT /api/Masks/{id}/stock
 ```
 
-**查詢參數：**
-- `query` (string, 可選): 搜尋關鍵字
-- `type` (string, 預設: "all"): 搜尋類型
-- `limit` (integer, 預設: 50): 限制回傳數量
+**路徑參數：**
+- `id` (integer, 必填): 要更新庫存的口罩產品 ID
 
-**回應格式：**
+**請求內容：**
 ```json
 {
-  "pharmacies": [...],
-  "masks": [...],
-  "totalResults": 0,
-  "searchTerm": "string"
+  "operation": "string",
+  "quantity": 0
 }
 ```
 
-### 2. 僅搜尋藥局
+**回應格式：** 單一口罩物件 (同Q2回應中的單個項目)
+
+**使用範例：**
+```bash
+# 增加口罩ID為1的庫存100個
+curl -X PUT "https://api.phantommask.com/api/Masks/1/stock" \
+  -H "Content-Type: application/json" \
+  -d '{"operation":"increase","quantity":100}'
+
+# 減少口罩ID為2的庫存50個
+curl -X PUT "https://api.phantommask.com/api/Masks/2/stock" \
+  -H "Content-Type: application/json" \
+  -d '{"operation":"decrease","quantity":50}'
+```
+
+---
+
+### Q7 - 批量新增或更新口罩
+
+**[Q7] ※※ 新增或更新多筆口罩資訊 (不含異動藥局現金餘額CashBalance) ※※**
 
 ```http
-GET /api/Search/pharmacies
+POST /api/Masks/upsert
 ```
 
 **查詢參數：**
-- `query` (string, 可選): 搜尋關鍵字
-- `limit` (integer, 預設: 50): 限制回傳數量
+- `pharmacyId` (integer, 可選): 藥局 ID
 
-### 3. 僅搜尋口罩
-
-```http
-GET /api/Search/masks
+**請求內容：**
+```json
+[
+  {
+    "name": "string",
+    "price": 0.0,
+    "stockQuantity": 0
+  }
+]
 ```
 
-**查詢參數：**
-- `query` (string, 可選): 搜尋關鍵字
-- `limit` (integer, 預設: 50): 限制回傳數量
+**回應格式：** 口罩陣列 (同Q2)
 
-### 4. 相關性搜尋
+**使用範例：**
+```bash
+# 為藥局ID為1批量新增/更新口罩資訊
+curl -X POST "https://api.phantommask.com/api/Masks/upsert?pharmacyId=1" \
+  -H "Content-Type: application/json" \
+  -d '[
+    {
+      "name": "N95口罩",
+      "price": 15.0,
+      "stockQuantity": 100
+    },
+    {
+      "name": "醫療口罩",
+      "price": 5.0,
+      "stockQuantity": 200
+    }
+  ]'
+```
+
+---
+
+### Q8 - 相關性搜尋
 
 **[Q8] ※※ 執行相關性搜尋 ※※**
 
@@ -403,20 +323,18 @@ GET /api/Search/SearchByRelavance
 ]
 ```
 
+**使用範例：**
+```bash
+# 搜尋關鍵字"N95"的相關結果
+curl -X GET "https://api.phantommask.com/api/Search/SearchByRelavance?query=N95"
+```
+
 ---
 
 ## 資料模型 (Schemas)
 
-### BulkMaskUpdateDto
-```json
-{
-  "maskId": 0,
-  "newStock": 0,
-  "newPrice": 0.0
-}
-```
-
 ### BulkPurchaseDto
+**批次購買資料傳輸物件，包含使用者資訊及多筆購買項目**
 ```json
 {
   "userId": 0,
@@ -430,7 +348,18 @@ GET /api/Search/SearchByRelavance
 }
 ```
 
+### BulkPurchaseItemDto
+**批次購買項目資料傳輸物件，代表單一藥局的單一口罩購買明細**
+```json
+{
+  "pharmacyId": 0,
+  "maskId": 0,
+  "quantity": 0
+}
+```
+
 ### BulkPurchaseResultDto
+**批量購買結果**
 ```json
 {
   "success": true,
@@ -442,6 +371,7 @@ GET /api/Search/SearchByRelavance
 ```
 
 ### MaskDto
+**口罩資料傳輸物件，包含口罩基本資訊及所屬藥局相關資訊**
 ```json
 {
   "id": 0,
@@ -455,6 +385,7 @@ GET /api/Search/SearchByRelavance
 ```
 
 ### MaskUpsertDto
+**口罩新增/更新資料**
 ```json
 {
   "name": "string",
@@ -464,6 +395,7 @@ GET /api/Search/SearchByRelavance
 ```
 
 ### PharmacyDto
+**藥局資料傳輸物件，包含基本資訊與口罩庫存相關數量**
 ```json
 {
   "id": 0,
@@ -471,24 +403,13 @@ GET /api/Search/SearchByRelavance
   "cashBalance": 0.0,
   "openingHours": "string",
   "createdAt": "2024-01-01T00:00:00Z",
-  "maskCount": 0
-}
-```
-
-### PurchaseAnalyticsDto
-```json
-{
-  "totalPurchases": 0,
-  "totalRevenue": 0.0,
-  "averageOrderValue": 0.0,
-  "mostPopularMask": "string",
-  "topPharmacy": "string",
-  "startDate": "2024-01-01T00:00:00Z",
-  "endDate": "2024-01-01T00:00:00Z"
+  "maskTypeCount": 0,
+  "maskTotalCount": 0
 }
 ```
 
 ### PurchaseDto
+**購買紀錄資料傳輸物件，包含用戶購買口罩的詳細資訊**
 ```json
 {
   "id": 0,
@@ -503,6 +424,7 @@ GET /api/Search/SearchByRelavance
 ```
 
 ### RelevanceResultDto
+**相關搜尋結果資料傳輸物件，包含基本資訊與相關度分數**
 ```json
 {
   "id": 0,
@@ -512,17 +434,8 @@ GET /api/Search/SearchByRelavance
 }
 ```
 
-### SearchResultDto
-```json
-{
-  "pharmacies": [...],
-  "masks": [...],
-  "totalResults": 0,
-  "searchTerm": "string"
-}
-```
-
 ### StockUpdateDto
+**用於更新庫存的資料傳輸物件**
 ```json
 {
   "operation": "string",
@@ -531,6 +444,7 @@ GET /api/Search/SearchByRelavance
 ```
 
 ### TopSpenderDto
+**消費排行榜資料**
 ```json
 {
   "userName": "string",
@@ -552,32 +466,10 @@ GET /api/Search/SearchByRelavance
 
 ---
 
-## 使用範例
+## 重要說明
 
-### 搜尋口罩
-```bash
-curl -X GET "https://api.phantommask.com/api/Masks/search?query=N95&limit=10"
-```
-
-### 更新口罩庫存
-```bash
-curl -X PUT "https://api.phantommask.com/api/Masks/1/stock" \
-  -H "Content-Type: application/json" \
-  -d '{"operation":"add","quantity":100}'
-```
-
-### 批量購買
-```bash
-curl -X POST "https://api.phantommask.com/api/Purchases/bulk" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "userId": 1,
-    "purchases": [
-      {
-        "pharmacyId": 1,
-        "maskId": 1,
-        "quantity": 2
-      }
-    ]
-  }'
-```
+1. **日期時間格式**: 所有日期時間參數使用 ISO 8601 格式 (例: `2024-01-01T00:00:00Z`)
+2. **庫存操作**: StockUpdateDto 中的 `operation` 參數可為 `"increase"`（增加）或 `"decrease"`（減少）
+3. **搜尋類型**: RelevanceResultDto 中的 `type` 參數值為 `"mask"` 或 `"pharmacy"`
+4. **營業時間**: 時間格式使用 24 小時制，例如 `"08:00"` 或 `"18:00"`
+5. **星期編號**: 1=週一, 2=週二, 3=週三, 4=週四, 5=週五, 6=週六, 7=週日

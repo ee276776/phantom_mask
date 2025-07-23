@@ -55,31 +55,6 @@ namespace PhantomMaskAPI.Controllers
             }
         }
 
-        ///// <summary>
-        ///// 取得購買趨勢分析
-        ///// </summary>
-        //[HttpGet("purchase-trends")]
-        //public async Task<ActionResult<PurchaseAnalyticsDto>> GetPurchaseTrends(
-        //    [FromQuery] DateTime startDate,
-        //    [FromQuery] DateTime endDate)
-        //{
-        //    try
-        //    {
-        //        if (startDate > endDate)
-        //        {
-        //            return BadRequest("開始日期不能晚於結束日期");
-        //        }
-
-        //        var analytics = await _purchaseService.GetPurchaseAnalyticsAsync(startDate, endDate);
-        //        _logger.LogInformation($"📈 生成購買趨勢分析: {startDate:yyyy-MM-dd} 到 {endDate:yyyy-MM-dd}");
-                
-        //        return Ok(analytics);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "取得購買趨勢分析時發生錯誤");
-        //        return StatusCode(500, "伺服器錯誤");
-        //    }
-        //}
+        
     }
 }
