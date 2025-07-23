@@ -22,6 +22,9 @@ namespace PhantomMaskAPI.Controllers
         /// <summary>
         /// [Q4] ※※ 顯示特定日期範圍內購買口罩花費最多的前 N 名用戶 ※※
         /// </summary>
+        /// <param name="startDate">查詢起始日期（包含此日期）。</param>
+        /// <param name="endDate">查詢結束日期（包含此日期）。</param>
+        /// <param name="topN">要取得的前 N 名用戶數量，預設為 10。</param>
         [HttpGet("top-spenders")]
         public async Task<ActionResult<List<TopSpenderDto>>> GetTopSpenders(
             [FromQuery] DateTime startDate,
@@ -52,31 +55,31 @@ namespace PhantomMaskAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// 取得購買趨勢分析
-        /// </summary>
-        [HttpGet("purchase-trends")]
-        public async Task<ActionResult<PurchaseAnalyticsDto>> GetPurchaseTrends(
-            [FromQuery] DateTime startDate,
-            [FromQuery] DateTime endDate)
-        {
-            try
-            {
-                if (startDate > endDate)
-                {
-                    return BadRequest("開始日期不能晚於結束日期");
-                }
+        ///// <summary>
+        ///// 取得購買趨勢分析
+        ///// </summary>
+        //[HttpGet("purchase-trends")]
+        //public async Task<ActionResult<PurchaseAnalyticsDto>> GetPurchaseTrends(
+        //    [FromQuery] DateTime startDate,
+        //    [FromQuery] DateTime endDate)
+        //{
+        //    try
+        //    {
+        //        if (startDate > endDate)
+        //        {
+        //            return BadRequest("開始日期不能晚於結束日期");
+        //        }
 
-                var analytics = await _purchaseService.GetPurchaseAnalyticsAsync(startDate, endDate);
-                _logger.LogInformation($"📈 生成購買趨勢分析: {startDate:yyyy-MM-dd} 到 {endDate:yyyy-MM-dd}");
+        //        var analytics = await _purchaseService.GetPurchaseAnalyticsAsync(startDate, endDate);
+        //        _logger.LogInformation($"📈 生成購買趨勢分析: {startDate:yyyy-MM-dd} 到 {endDate:yyyy-MM-dd}");
                 
-                return Ok(analytics);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "取得購買趨勢分析時發生錯誤");
-                return StatusCode(500, "伺服器錯誤");
-            }
-        }
+        //        return Ok(analytics);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "取得購買趨勢分析時發生錯誤");
+        //        return StatusCode(500, "伺服器錯誤");
+        //    }
+        //}
     }
 }

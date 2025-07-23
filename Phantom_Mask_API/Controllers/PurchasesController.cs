@@ -85,83 +85,83 @@ namespace PhantomMaskAPI.Controllers
 
 
 
-        /// <summary>
-        /// 取得用戶購買記錄
-        /// </summary>
-        [HttpGet("by-user/{userName}")]
-        public async Task<ActionResult<List<PurchaseDto>>> GetUserPurchases(string userName)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(userName))
-                {
-                    return BadRequest("用戶名稱不能為空");
-                }
+        ///// <summary>
+        ///// 取得用戶購買記錄
+        ///// </summary>
+        //[HttpGet("by-user/{userName}")]
+        //public async Task<ActionResult<List<PurchaseDto>>> GetUserPurchases(string userName)
+        //{
+        //    try
+        //    {
+        //        if (string.IsNullOrEmpty(userName))
+        //        {
+        //            return BadRequest("用戶名稱不能為空");
+        //        }
 
-                var purchases = await _purchaseService.GetUserPurchasesAsync(userName);
-                _logger.LogInformation($"📋 用戶 {userName} 有 {purchases.Count} 筆購買記錄");
+        //        var purchases = await _purchaseService.GetUserPurchasesAsync(userName);
+        //        _logger.LogInformation($"📋 用戶 {userName} 有 {purchases.Count} 筆購買記錄");
                 
-                return Ok(purchases);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"取得用戶 {userName} 購買記錄時發生錯誤");
-                return StatusCode(500, "伺服器錯誤");
-            }
-        }
+        //        return Ok(purchases);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, $"取得用戶 {userName} 購買記錄時發生錯誤");
+        //        return StatusCode(500, "伺服器錯誤");
+        //    }
+        //}
 
-        /// <summary>
-        /// 取得特定日期範圍內的購買記錄
-        /// </summary>
-        [HttpGet("by-date-range")]
-        public async Task<ActionResult<List<PurchaseDto>>> GetPurchasesByDateRange(
-            [FromQuery] DateTime startDate,
-            [FromQuery] DateTime endDate)
-        {
-            try
-            {
-                if (startDate > endDate)
-                {
-                    return BadRequest("開始日期不能晚於結束日期");
-                }
+        ///// <summary>
+        ///// 取得特定日期範圍內的購買記錄
+        ///// </summary>
+        //[HttpGet("by-date-range")]
+        //public async Task<ActionResult<List<PurchaseDto>>> GetPurchasesByDateRange(
+        //    [FromQuery] DateTime startDate,
+        //    [FromQuery] DateTime endDate)
+        //{
+        //    try
+        //    {
+        //        if (startDate > endDate)
+        //        {
+        //            return BadRequest("開始日期不能晚於結束日期");
+        //        }
 
-                var purchases = await _purchaseService.GetPurchasesByDateRangeAsync(startDate, endDate);
-                _logger.LogInformation($"📅 日期範圍 {startDate:yyyy-MM-dd} 到 {endDate:yyyy-MM-dd} 有 {purchases.Count} 筆購買記錄");
+        //        var purchases = await _purchaseService.GetPurchasesByDateRangeAsync(startDate, endDate);
+        //        _logger.LogInformation($"📅 日期範圍 {startDate:yyyy-MM-dd} 到 {endDate:yyyy-MM-dd} 有 {purchases.Count} 筆購買記錄");
                 
-                return Ok(purchases);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"取得日期範圍購買記錄時發生錯誤");
-                return StatusCode(500, "伺服器錯誤");
-            }
-        }
+        //        return Ok(purchases);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, $"取得日期範圍購買記錄時發生錯誤");
+        //        return StatusCode(500, "伺服器錯誤");
+        //    }
+        //}
 
-        /// <summary>
-        /// 取得購買分析資料
-        /// </summary>
-        [HttpGet("analytics")]
-        public async Task<ActionResult<PurchaseAnalyticsDto>> GetPurchaseAnalytics(
-            [FromQuery] DateTime startDate,
-            [FromQuery] DateTime endDate)
-        {
-            try
-            {
-                if (startDate > endDate)
-                {
-                    return BadRequest("開始日期不能晚於結束日期");
-                }
+        ///// <summary>
+        ///// 取得購買分析資料
+        ///// </summary>
+        //[HttpGet("analytics")]
+        //public async Task<ActionResult<PurchaseAnalyticsDto>> GetPurchaseAnalytics(
+        //    [FromQuery] DateTime startDate,
+        //    [FromQuery] DateTime endDate)
+        //{
+        //    try
+        //    {
+        //        if (startDate > endDate)
+        //        {
+        //            return BadRequest("開始日期不能晚於結束日期");
+        //        }
 
-                var analytics = await _purchaseService.GetPurchaseAnalyticsAsync(startDate, endDate);
-                _logger.LogInformation($"📊 生成購買分析報表: {startDate:yyyy-MM-dd} 到 {endDate:yyyy-MM-dd}");
+        //        var analytics = await _purchaseService.GetPurchaseAnalyticsAsync(startDate, endDate);
+        //        _logger.LogInformation($"📊 生成購買分析報表: {startDate:yyyy-MM-dd} 到 {endDate:yyyy-MM-dd}");
                 
-                return Ok(analytics);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"生成購買分析報表時發生錯誤");
-                return StatusCode(500, "伺服器錯誤");
-            }
-        }
+        //        return Ok(analytics);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, $"生成購買分析報表時發生錯誤");
+        //        return StatusCode(500, "伺服器錯誤");
+        //    }
+        //}
     }
 }

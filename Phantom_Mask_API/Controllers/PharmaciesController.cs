@@ -80,7 +80,7 @@ namespace PhantomMaskAPI.Controllers
         private bool IsValidTimeFormat(string time)
         {
             if (string.IsNullOrEmpty(time)) return false;
-            
+
             return TimeOnly.TryParseExact(time, "HH:mm", out _);
         }
 
@@ -167,53 +167,53 @@ namespace PhantomMaskAPI.Controllers
                 return StatusCode(500, $"篩選藥局時發生錯誤: {ex.Message}");
             }
         }
-        /// <summary>
-        /// 根據 ID 取得特定藥局
-        /// </summary>
-        [HttpGet("{id}")]
-        public async Task<ActionResult<PharmacyDto>> GetPharmacy(int id)
-        {
-            try
-            {
-                var pharmacy = await _pharmacyService.GetPharmacyByIdAsync(id);
-                if (pharmacy == null)
-                {
-                    _logger.LogWarning($"⚠️ 找不到 ID 為 {id} 的藥局");
-                    return NotFound($"找不到 ID 為 {id} 的藥局");
-                }
+        ///// <summary>
+        ///// 根據 ID 取得特定藥局
+        ///// </summary>
+        //[HttpGet("{id}")]
+        //public async Task<ActionResult<PharmacyDto>> GetPharmacy(int id)
+        //{
+        //    try
+        //    {
+        //        var pharmacy = await _pharmacyService.GetPharmacyByIdAsync(id);
+        //        if (pharmacy == null)
+        //        {
+        //            _logger.LogWarning($"⚠️ 找不到 ID 為 {id} 的藥局");
+        //            return NotFound($"找不到 ID 為 {id} 的藥局");
+        //        }
 
-                _logger.LogInformation($"🏥 找到藥局：{pharmacy.Name}");
-                return Ok(pharmacy);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"取得藥局 ID {id} 時發生錯誤");
-                return StatusCode(500, $"取得藥局資料時發生錯誤: {ex.Message}");
-            }
-        }
+        //        _logger.LogInformation($"🏥 找到藥局：{pharmacy.Name}");
+        //        return Ok(pharmacy);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, $"取得藥局 ID {id} 時發生錯誤");
+        //        return StatusCode(500, $"取得藥局資料時發生錯誤: {ex.Message}");
+        //    }
+        //}
 
-        /// <summary>
-        /// 一次為藥局創建或更新多個口罩產品，包括名稱、價格和庫存數量
-        /// </summary>
-        /// <param name="id">藥局ID</param>
-        /// <param name="maskUpdates">口罩更新資料列表</param>
-        [HttpPost("{id}/masks/bulk")]
-        public async Task<ActionResult<List<MaskDto>>> BulkUpdateMasks(
-            int id,
-            [FromBody] List<BulkMaskUpdateDto> maskUpdates)
-        {
-            try
-            {
-                var result = await _maskService.BulkUpdateMasksAsync(id, maskUpdates);
-                _logger.LogInformation($"💊 藥局 ID {id} 成功批量更新 {result.Count} 個口罩");
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"藥局 ID {id} 批量更新口罩時發生錯誤");
-                return StatusCode(500, $"批量更新口罩時發生錯誤: {ex.Message}");
-            }
-        }
+        ///// <summary>
+        ///// 一次為藥局創建或更新多個口罩產品，包括名稱、價格和庫存數量
+        ///// </summary>
+        ///// <param name="id">藥局ID</param>
+        ///// <param name="maskUpdates">口罩更新資料列表</param>
+        //[HttpPost("{id}/masks/bulk")]
+        //public async Task<ActionResult<List<MaskDto>>> BulkUpdateMasks(
+        //    int id,
+        //    [FromBody] List<BulkMaskUpdateDto> maskUpdates)
+        //{
+        //    try
+        //    {
+        //        var result = await _maskService.BulkUpdateMasksAsync(id, maskUpdates);
+        //        _logger.LogInformation($"💊 藥局 ID {id} 成功批量更新 {result.Count} 個口罩");
+        //        return Ok(result);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, $"藥局 ID {id} 批量更新口罩時發生錯誤");
+        //        return StatusCode(500, $"批量更新口罩時發生錯誤: {ex.Message}");
+        //    }
+        //}
 
         // /// <summary>
         // /// 新增藥局

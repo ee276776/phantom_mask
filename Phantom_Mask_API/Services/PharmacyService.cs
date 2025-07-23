@@ -42,7 +42,8 @@ namespace PhantomMaskAPI.Services
                 CashBalance = p.CashBalance,
                 OpeningHours = p.OpeningHours,
                 CreatedAt = p.CreatedAt,
-                MaskCount = p.Masks.Count
+                MaskTypeCount = p.Masks.Count,
+                MaskTotalCount = p.Masks.Sum(m => m.StockQuantity)
             }).ToList();
 
             _logger.LogInformation($"🏥 找到 {result.Count} 家藥局");
@@ -61,7 +62,8 @@ namespace PhantomMaskAPI.Services
                 CashBalance = pharmacy.CashBalance,
                 OpeningHours = pharmacy.OpeningHours,
                 CreatedAt = pharmacy.CreatedAt,
-                MaskCount = pharmacy.Masks.Count
+                MaskTypeCount = pharmacy.Masks.Count,
+                MaskTotalCount = pharmacy.Masks.Sum(m => m.StockQuantity)
             };
         }
 
@@ -109,7 +111,8 @@ namespace PhantomMaskAPI.Services
                 CashBalance = p.CashBalance,
                 OpeningHours = p.OpeningHours,
                 CreatedAt = p.CreatedAt,
-                MaskCount = p.Masks.Count
+                MaskTypeCount = p.Masks.Count,
+                MaskTotalCount = p.Masks.Sum(m => m.StockQuantity)
             }).ToList();
 
             _logger.LogInformation($"� 搜尋 '{searchTerm}' 找到 {result.Count} 家藥局");
@@ -127,7 +130,8 @@ namespace PhantomMaskAPI.Services
                 CashBalance = p.CashBalance,
                 OpeningHours = p.OpeningHours,
                 CreatedAt = p.CreatedAt,
-                MaskCount = p.Masks.Count
+                MaskTypeCount = p.Masks.Count,
+                MaskTotalCount = p.Masks.Sum(m => m.StockQuantity)
             }).ToList();
 
             _logger.LogInformation($"🏪 符合庫存條件的藥局: {result.Count} 家");
@@ -175,7 +179,8 @@ namespace PhantomMaskAPI.Services
                 CashBalance = p.CashBalance,
                 OpeningHours = p.OpeningHours,
                 CreatedAt = p.CreatedAt,
-                MaskCount = p.Masks.Count
+                MaskTypeCount = p.Masks.Count,
+                MaskTotalCount = p.Masks.Sum(m => m.StockQuantity)
             }).ToList();
 
             _logger.LogInformation($"🏪 符合庫存條件的藥局: {result.Count} 家");

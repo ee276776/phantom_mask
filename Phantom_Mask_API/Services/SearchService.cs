@@ -66,7 +66,8 @@ namespace PhantomMaskAPI.Services
                 CashBalance = p.CashBalance,
                 OpeningHours = p.OpeningHours,
                 CreatedAt = p.CreatedAt,
-                MaskCount = p.Masks.Count
+                MaskTypeCount = p.Masks.Count,
+                MaskTotalCount = p.Masks.Sum(m => m.StockQuantity)
             }).ToList();
 
             // 按相關性排序 - 精確匹配優先，然後是包含關鍵字的

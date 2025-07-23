@@ -22,59 +22,61 @@ namespace PhantomMaskAPI.Controllers
             _logger = logger;
         }
 
-        /// <summary>
-        /// 搜尋口罩
-        /// </summary>
-        [HttpGet("search")]
-        public async Task<ActionResult<List<MaskDto>>> SearchMasks(
-            [FromQuery] string query,
-            [FromQuery] int limit = 50)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(query))
-                {
-                    return BadRequest("搜尋關鍵字不能為空");
-                }
+        ///// <summary>
+        ///// 搜尋口罩
+        ///// </summary>
+        //[HttpGet("search")]
+        //public async Task<ActionResult<List<MaskDto>>> SearchMasks(
+        //    [FromQuery] string query,
+        //    [FromQuery] int limit = 50)
+        //{
+        //    try
+        //    {
+        //        if (string.IsNullOrEmpty(query))
+        //        {
+        //            return BadRequest("搜尋關鍵字不能為空");
+        //        }
 
-                var masks = await _maskService.SearchMasksAsync(query, limit);
-                _logger.LogInformation($"😷 搜尋 '{query}' 找到 {masks.Count} 個口罩");
+        //        var masks = await _maskService.SearchMasksAsync(query, limit);
+        //        _logger.LogInformation($"😷 搜尋 '{query}' 找到 {masks.Count} 個口罩");
                 
-                return Ok(masks);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"搜尋口罩 '{query}' 時發生錯誤");
-                return StatusCode(500, "伺服器錯誤");
-            }
-        }
+        //        return Ok(masks);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, $"搜尋口罩 '{query}' 時發生錯誤");
+        //        return StatusCode(500, "伺服器錯誤");
+        //    }
+        //}
 
-        /// <summary>
-        /// 取得特定口罩資訊
-        /// </summary>
-        [HttpGet("{id}")]
-        public async Task<ActionResult<MaskDto>> GetMask(int id)
-        {
-            try
-            {
-                var mask = await _maskService.GetMaskByIdAsync(id);
-                if (mask == null)
-                {
-                    return NotFound($"找不到 ID 為 {id} 的口罩");
-                }
+        ///// <summary>
+        ///// 取得特定口罩資訊
+        ///// </summary>
+        //[HttpGet("{id}")]
+        //public async Task<ActionResult<MaskDto>> GetMask(int id)
+        //{
+        //    try
+        //    {
+        //        var mask = await _maskService.GetMaskByIdAsync(id);
+        //        if (mask == null)
+        //        {
+        //            return NotFound($"找不到 ID 為 {id} 的口罩");
+        //        }
 
-                return Ok(mask);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"取得口罩 ID {id} 時發生錯誤");
-                return StatusCode(500, "伺服器錯誤");
-            }
-        }
+        //        return Ok(mask);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, $"取得口罩 ID {id} 時發生錯誤");
+        //        return StatusCode(500, "伺服器錯誤");
+        //    }
+        //}
 
         /// <summary>
         /// [Q6] ※※ 更新口罩庫存 - 透過增加或減少來更新現有口罩產品的庫存數量 ※※
         /// </summary>
+        /// <param name="id">要更新庫存的口罩產品 ID。</param>
+        /// <param name="stockUpdate">包含操作類型（增加或減少）及數量的庫存更新資料。</param>
         [HttpPut("{id}/stock")]
         public async Task<ActionResult<MaskDto>> UpdateMaskStock(
             int id,
@@ -110,53 +112,53 @@ namespace PhantomMaskAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// 取得價格範圍內的口罩
-        /// </summary>
-        [HttpGet("by-price-range")]
-        public async Task<ActionResult<List<MaskDto>>> GetMasksByPriceRange(
-            [FromQuery] decimal minPrice,
-            [FromQuery] decimal maxPrice)
-        {
-            try
-            {
-                if (minPrice < 0 || maxPrice < 0 || minPrice > maxPrice)
-                {
-                    return BadRequest("價格範圍無效");
-                }
+        ///// <summary>
+        ///// 取得價格範圍內的口罩
+        ///// </summary>
+        //[HttpGet("by-price-range")]
+        //public async Task<ActionResult<List<MaskDto>>> GetMasksByPriceRange(
+        //    [FromQuery] decimal minPrice,
+        //    [FromQuery] decimal maxPrice)
+        //{
+        //    try
+        //    {
+        //        if (minPrice < 0 || maxPrice < 0 || minPrice > maxPrice)
+        //        {
+        //            return BadRequest("價格範圍無效");
+        //        }
 
-                var masks = await _maskService.GetMasksInPriceRangeAsync(minPrice, maxPrice);
-                _logger.LogInformation($"💰 價格範圍 {minPrice}-{maxPrice} 找到 {masks.Count} 個口罩");
+        //        var masks = await _maskService.GetMasksInPriceRangeAsync(minPrice, maxPrice);
+        //        _logger.LogInformation($"💰 價格範圍 {minPrice}-{maxPrice} 找到 {masks.Count} 個口罩");
                 
-                return Ok(masks);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"取得價格範圍 {minPrice}-{maxPrice} 口罩時發生錯誤");
-                return StatusCode(500, "伺服器錯誤");
-            }
-        }
+        //        return Ok(masks);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, $"取得價格範圍 {minPrice}-{maxPrice} 口罩時發生錯誤");
+        //        return StatusCode(500, "伺服器錯誤");
+        //    }
+        //}
 
-        /// <summary>
-        /// 取得低庫存口罩
-        /// </summary>
-        [HttpGet("low-stock")]
-        public async Task<ActionResult<List<MaskDto>>> GetLowStockMasks(
-            [FromQuery] int threshold = 10)
-        {
-            try
-            {
-                var masks = await _maskService.GetLowStockMasksAsync(threshold);
-                _logger.LogInformation($"⚠️ 找到 {masks.Count} 個低庫存口罩（閾值: {threshold}）");
+        ///// <summary>
+        ///// 取得低庫存口罩
+        ///// </summary>
+        //[HttpGet("low-stock")]
+        //public async Task<ActionResult<List<MaskDto>>> GetLowStockMasks(
+        //    [FromQuery] int threshold = 10)
+        //{
+        //    try
+        //    {
+        //        var masks = await _maskService.GetLowStockMasksAsync(threshold);
+        //        _logger.LogInformation($"⚠️ 找到 {masks.Count} 個低庫存口罩（閾值: {threshold}）");
                 
-                return Ok(masks);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"取得低庫存口罩時發生錯誤");
-                return StatusCode(500, "伺服器錯誤");
-            }
-        }
+        //        return Ok(masks);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, $"取得低庫存口罩時發生錯誤");
+        //        return StatusCode(500, "伺服器錯誤");
+        //    }
+        //}
 
         /// <summary>
         /// [Q7] ※※ 新增或更新多筆口罩資訊 (不含異動藥局現金餘額CashBalance) ※※
