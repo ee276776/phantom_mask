@@ -35,16 +35,16 @@ namespace PhantomMaskAPI.Services
                 pharmacies = pharmacies.Where(p => IsPharmacyMatchTimeFilter(p.OpeningHours, filter.DayOfWeek, filter.StartTime, filter.EndTime)).ToList();
             }
 
-            var result = pharmacies.Select(p => new PharmacyDto
+            List<PharmacyDto> result = pharmacies.Any()?pharmacies.Select(p => new PharmacyDto
             {
                 Id = p.Id,
                 Name = p.Name,
                 CashBalance = p.CashBalance,
                 OpeningHours = p.OpeningHours,
                 CreatedAt = p.CreatedAt,
-                MaskTypeCount = p.Masks.Count,
-                MaskTotalCount = p.Masks.Sum(m => m.StockQuantity)
-            }).ToList();
+                MaskTypeCount = p.Masks?.Count ?? 0, // 如果 p.Masks 為 null，則 MaskTypeCount 為 0
+                MaskTotalCount = p.Masks?.Sum(m => m.StockQuantity) ?? 0 // 如果 p.Masks 為 null，則 MaskTotalCount 為 0
+            }).ToList(): new List<PharmacyDto>(); 
 
             _logger.LogInformation($"🏥 找到 {result.Count} 家藥局");
             return result;
@@ -92,7 +92,7 @@ namespace PhantomMaskAPI.Services
                 Price = m.Price,
                 StockQuantity = m.StockQuantity,
                 PharmacyId = m.PharmacyId,
-                PharmacyName = m.Pharmacy.Name,
+                PharmacyName = m.Pharmacy?.Name,
                 CreatedAt = m.CreatedAt
             }).ToList();
 
@@ -192,62 +192,123 @@ namespace PhantomMaskAPI.Services
         /// </summary>
         private bool IsPharmacyMatchTimeFilter(string openingHours, int? dayOfWeek, string? startTime, string? endTime)
         {
+            // 如果營業時間字串為空，則直接不符合條件
             if (string.IsNullOrEmpty(openingHours))
                 return false;
 
-            // 將數字轉換為星期名稱
-            var dayNames = new[] { "", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun" };
-            
-            // 解析營業時間字串: "Mon 08:00 - 18:00, Tue 13:00 - 18:00, Wed 08:00 - 18:00, Thur 13:00 - 18:00, Fri 08:00 - 18:00"
-            var daySchedules = openingHours.Split(',').Select(s => s.Trim()).ToList();
-            
+            // 將數字轉換為星期名稱，用於匹配
+            var dayNames = new[] { "", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" }; // 注意: "Thur" 改為 "Thu" 更常見
+
+            // 解析營業時間字串，預期格式如 "Mon 08:00 - 18:00, Tue 13:00 - 18:00"
+            var daySchedules = openingHours.Split(',')
+                                           .Select(s => s.Trim())
+                                           .ToList();
+
+            // 解析篩選時間（如果提供）
+            TimeSpan filterStartTimeSpan = TimeSpan.MinValue; // 預設為最小值
+            if (!string.IsNullOrEmpty(startTime))
+            {
+                if (!TimeSpan.TryParse(startTime, out filterStartTimeSpan))
+                {
+                    // 如果篩選開始時間格式不正確，則此篩選條件無效，可以視為不符合
+                    // 這裡選擇直接返回 false，表示不符合此篩選條件
+                    // 或者可以選擇日誌記錄警告並忽略該篩選時間，讓其他條件判斷
+                    // 根據您的需求決定，這裡採嚴格模式
+                    return false;
+                }
+            }
+
+            TimeSpan filterEndTimeSpan = TimeSpan.MaxValue; // 預設為最大值
+            if (!string.IsNullOrEmpty(endTime))
+            {
+                if (!TimeSpan.TryParse(endTime, out filterEndTimeSpan))
+                {
+                    // 如果篩選結束時間格式不正確，同上
+                    return false;
+                }
+            }
+
+            // 遍歷每個營業時間段
             foreach (var schedule in daySchedules)
             {
-                var parts = schedule.Split(' ');
-                if (parts.Length < 4) continue; // 格式不正確，跳過
-                
-                var dayName = parts[0]; // Mon, Tue, Wed...
-                var timeRange = $"{parts[1]} {parts[2]} {parts[3]}"; // 08:00 - 18:00
-                
-                // 如果指定了 dayOfWeek，只檢查該天；如果沒指定，則檢查所有天
+                var parts = schedule.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries); // 使用 RemoveEmptyEntries
+
+                // 檢查基本格式：至少要有 "Day Time1 - Time2" (4 parts)
+                // 例如 "Mon 08:00 - 18:00"
+                if (parts.Length < 4 || !parts[2].Equals("-")) // parts[2] 應該是分隔符 '-'
+                {
+                    continue; // 格式不正確，跳過此營業時間段
+                }
+
+                var dayName = parts[0]; // "Mon"
+                                        // timeParts[0] 是 "08:00", timeParts[1] 是 "18:00"
+                var scheduleStartTimeStr = parts[1];
+                var scheduleEndTimeStr = parts[3];
+
+                // 1. 檢查星期是否符合
+                bool dayMatchesCurrentSchedule = false;
                 if (dayOfWeek.HasValue)
                 {
-                    var targetDayName = dayNames[dayOfWeek.Value];
-                    if (!dayName.Equals(targetDayName, StringComparison.OrdinalIgnoreCase))
-                        continue; // 不是指定的星期，跳過
+                    // 轉換篩選的 dayOfWeek 為星期名稱，用於匹配
+                    if (dayOfWeek.Value >= 1 && dayOfWeek.Value <= 7) // 確保 dayOfWeek 在有效範圍內
+                    {
+                        var targetDayName = dayNames[dayOfWeek.Value];
+                        if (dayName.Equals(targetDayName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            dayMatchesCurrentSchedule = true;
+                        }
+                        // 特殊處理 "Mon-Fri" 這種範圍
+                        else if (dayName.Contains("-")) // 檢查是否為 "X-Y" 格式
+                        {
+                            var rangeDays = dayName.Split('-');
+                            if (rangeDays.Length == 2)
+                            {
+                                int startIdx = Array.IndexOf(dayNames, rangeDays[0]);
+                                int endIdx = Array.IndexOf(dayNames, rangeDays[1]);
+
+                                if (startIdx != -1 && endIdx != -1 && dayOfWeek.Value >= startIdx && dayOfWeek.Value <= endIdx)
+                                {
+                                    dayMatchesCurrentSchedule = true;
+                                }
+                            }
+                        }
+                    }
                 }
-                // 如果沒有指定 dayOfWeek，則檢查任何一天是否符合時間條件
-                
-                // 解析時間範圍: "08:00 - 18:00"
-                var timeParts = timeRange.Split('-').Select(t => t.Trim()).ToArray();
-                if (timeParts.Length != 2) continue;
-                
-                var scheduleStartTime = timeParts[0]; // "08:00"
-                var scheduleEndTime = timeParts[1];   // "18:00"
-                
-                // 檢查時間條件
-                bool timeMatches = true;
-                
-                // 檢查 startTime 條件 (如果藥局開始營業時間晚於指定時間，則不符合)
-                if (!string.IsNullOrEmpty(startTime))
+                else
                 {
-                    if (CompareTime(scheduleStartTime, startTime) > 0) 
-                        timeMatches = false;
+                    // 如果 dayOfWeek 沒有指定，則任何一天都符合星期的篩選條件
+                    dayMatchesCurrentSchedule = true;
                 }
-                
-                // 檢查 endTime 條件 (如果藥局結束營業時間早於指定時間，則不符合)
-                if (!string.IsNullOrEmpty(endTime) && timeMatches)
+
+                if (!dayMatchesCurrentSchedule)
                 {
-                    if (CompareTime(scheduleEndTime, endTime) < 0) 
-                        timeMatches = false;
+                    continue; // 如果當前排程的星期不符合篩選條件，則跳過
                 }
-                
-                // 如果時間條件都符合，則返回 true
-                if (timeMatches)
-                    return true;
+
+                // 2. 解析排程的時間並檢查時間是否符合
+                TimeSpan scheduleStartTimeSpan, scheduleEndTimeSpan;
+                if (!TimeSpan.TryParse(scheduleStartTimeStr, out scheduleStartTimeSpan) ||
+                    !TimeSpan.TryParse(scheduleEndTimeStr, out scheduleEndTimeSpan))
+                {
+                    // 如果營業時間的開始或結束時間格式不正確，跳過此排程
+                    continue;
+                }
+
+                // 檢查時間區間是否有重疊
+                // 篩選時間段：[filterStartTimeSpan, filterEndTimeSpan]
+                // 藥局營業時間：[scheduleStartTimeSpan, scheduleEndTimeSpan]
+                // 重疊條件：filterReqStartTime < scheduleEndTimeSpan && filterReqEndTime > scheduleStartTimeSpan
+                bool timeOverlap = (filterStartTimeSpan < scheduleEndTimeSpan && filterEndTimeSpan > scheduleStartTimeSpan);
+
+                // 如果這個排程的時間與篩選時間有重疊，並且星期也符合（或未指定篩選星期），則該藥局符合條件
+                if (timeOverlap)
+                {
+                    return true; // 找到一個符合條件的營業時間段，立即返回 true
+                }
             }
-            
-            return false; // 沒有找到符合條件的時間段
+
+            // 遍歷所有營業時間段後，如果都沒有找到符合條件的，則返回 false
+            return false;
         }
 
         /// <summary>

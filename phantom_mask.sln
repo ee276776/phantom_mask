@@ -6,6 +6,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhantomMaskETL", "ETL\Phant
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhantomMaskAPI", "Phantom_Mask_API\PhantomMaskAPI.csproj", "{2A89562D-773C-4B8D-8111-8ED2E2045F26}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhantomMaskAPI.Tests", "PhantomMaskAPI.Tests\PhantomMaskAPI.Tests.csproj", "{CCEC09C6-DEE4-4C1F-8BFA-C62F974C76A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{2A89562D-773C-4B8D-8111-8ED2E2045F26}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A89562D-773C-4B8D-8111-8ED2E2045F26}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2A89562D-773C-4B8D-8111-8ED2E2045F26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCEC09C6-DEE4-4C1F-8BFA-C62F974C76A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCEC09C6-DEE4-4C1F-8BFA-C62F974C76A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCEC09C6-DEE4-4C1F-8BFA-C62F974C76A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCEC09C6-DEE4-4C1F-8BFA-C62F974C76A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
