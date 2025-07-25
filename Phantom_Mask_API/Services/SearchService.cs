@@ -1,5 +1,6 @@
 using PhantomMaskAPI.Models.DTOs;
 using PhantomMaskAPI.Interfaces;
+using PhantomMaskAPI.Models.Entities;
 
 namespace PhantomMaskAPI.Services
 {
@@ -119,58 +120,66 @@ namespace PhantomMaskAPI.Services
 
         public async Task<List<RelevanceResultDto>> SearchByRelavanceAsync(string query)
         {
-
-            var masks = await _maskRepository.GetAllAsync();
-            var pharmacies = await _pharmacyRepository.GetAllAsync();
-
             var allResults = new List<RelevanceResultDto>();
 
-            // 2. 處理口罩數據
-            foreach (var mask in masks)
+            List<Mask> masks = new();
+            try
             {
-                var searchItem = new RelevanceDto
+                masks = await _maskRepository.GetAllAsync();
+                foreach (var mask in masks)
                 {
-                    ID = mask.Id,
-                    Name = mask.Name,
-                    Type = "mask"
-
-                };
-                double score = _relevanceService.CalculateRelevanceScoreInternal(query, searchItem);
-                allResults.Add(new RelevanceResultDto
-                {
-                    ID = mask.Id,
-                    Type = "mask",
-                    Name = mask.Name,
-                    RelevanceScore = score
-                });
+                    var searchItem = new RelevanceDto
+                    {
+                        ID = mask.Id,
+                        Name = mask.Name,
+                        Type = "mask"
+                    };
+                    double score = _relevanceService.CalculateRelevanceScoreInternal(query, searchItem);
+                    allResults.Add(new RelevanceResultDto
+                    {
+                        ID = mask.Id,
+                        Type = "mask",
+                        Name = mask.Name,
+                        RelevanceScore = score
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "搜尋口罩時發生錯誤.");
             }
 
-            // 3. 處理藥局數據
-            foreach (var pharmacy in pharmacies)
+            List<Pharmacy> pharmacies = new();
+            try
             {
-                var searchItem = new RelevanceDto
+                pharmacies = await _pharmacyRepository.GetAllAsync();
+                foreach (var pharmacy in pharmacies)
                 {
-                    ID = pharmacy.Id,
-                    Name = pharmacy.Name,
-                    Type = "pharmacy"
-                };
-                double score = _relevanceService.CalculateRelevanceScoreInternal(query, searchItem);
-                allResults.Add(new RelevanceResultDto
-                {
-                    ID = pharmacy.Id,
-                    Type = "pharmacy",
-                    Name = pharmacy.Name,
-                    RelevanceScore = score
-                });
+                    var searchItem = new RelevanceDto
+                    {
+                        ID = pharmacy.Id,
+                        Name = pharmacy.Name,
+                        Type = "pharmacy"
+                    };
+                    double score = _relevanceService.CalculateRelevanceScoreInternal(query, searchItem);
+                    allResults.Add(new RelevanceResultDto
+                    {
+                        ID = pharmacy.Id,
+                        Type = "pharmacy",
+                        Name = pharmacy.Name,
+                        RelevanceScore = score
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "搜尋藥局時發生錯誤.");
             }
 
-            // 4. 過濾掉分數為 0 的結果，然後按相關性分數降序排序並回傳
             return allResults
                 .Where(r => r.RelevanceScore > 0)
                 .OrderByDescending(r => r.RelevanceScore)
                 .ToList();
-
-
         }
 
 
