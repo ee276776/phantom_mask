@@ -1,5 +1,26 @@
+# PhantomMask 口罩購買系統
 
-# PhantomMask API 文件
+## 專案介紹
+
+PhantomMask 是一個基於 .NET 8 和 ASP.NET Core 開發的口罩購買管理系統 API。本系統提供完整的藥局管理、口罩庫存管理、使用者購買記錄追蹤等功能，並支援複雜的查詢條件和批量操作。
+
+### 主要功能特色
+- 藥局資訊管理與時間篩選查詢
+- 口罩庫存即時更新與批量管理
+- 多藥局批量購買處理
+- 消費者消費統計分析
+- 智慧相關性搜尋功能
+
+### 技術架構
+- **後端框架**：ASP.NET Core 8.0 Web API
+- **資料庫**：SQL Server with Entity Framework Core
+- **容器化**：Docker & Docker Compose
+- **測試框架**：xUnit with Moq
+- **API 文件**：Swagger/OpenAPI
+
+---
+
+## PhantomMask API 文件
 
 **版本：** v1  
 **描述：** 口罩購買系統 API - 提供藥局、口罩和購買相關功能
