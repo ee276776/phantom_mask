@@ -1,3 +1,4 @@
+
 # PhantomMask API 文件
 
 **版本：** v1  
@@ -6,11 +7,29 @@
 ---
 
 ## 目錄
-
+- [完成度](#完成度)
 - [核心功能 API](#核心功能-api)
 - [資料模型 (Schemas)](#資料模型-schemas)
 
+
 ---
+## 完成度
+* [x] List pharmacies, optionally filtered by specific time and/or day of the week.  
+  * Implemented at **GET /api/Pharmacies**
+* [x] List all masks sold by a given pharmacy with an option to sort by name or price.  
+  * Implemented at **GET /api/Pharmacies/{id}/masks**
+* [x] List all pharmacies that offer a number of mask products within a given price range, where the count is above, below, or between given thresholds.  
+  * Implemented at **GET /api/Pharmacies/by-stock**
+* [x] Show the top N users who spent the most on masks during a specific date range.  
+  * Implemented at **GET /api/Analytics/top-spenders**
+* [x] Process a purchase where a user buys masks from multiple pharmacies at once.  
+  * Implemented at **POST /api/Purchases/bulk**
+* [x] Update the stock quantity of an existing mask product by increasing or decreasing it.  
+  * Implemented at **PUT /api/Masks/{id}/stock**
+* [x] Create or update multiple mask products for a pharmacy at once, including name, price, and stock quantity.  
+  * Implemented at **POST /api/Masks/upsert**
+* [x] Search for pharmacies or masks by name and rank the results by relevance to the search term.  
+  * Implemented at **GET /api/Search/SearchByRelavance**
 
 ## 核心功能 API
 

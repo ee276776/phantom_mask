@@ -1,5 +1,6 @@
 using PhantomMaskAPI.Models.DTOs;
 using PhantomMaskAPI.Interfaces;
+using PhantomMaskAPI.Models.Entities;
 
 namespace PhantomMaskAPI.Services
 {
@@ -50,22 +51,22 @@ namespace PhantomMaskAPI.Services
             return result;
         }
 
-        public async Task<PharmacyDto?> GetPharmacyByIdAsync(int id)
-        {
-            var pharmacy = await _pharmacyRepository.GetPharmacyWithMasksAsync(id);
-            if (pharmacy == null) return null;
+        //public async Task<PharmacyDto?> GetPharmacyByIdAsync(int id)
+        //{
+        //    var pharmacy = await _pharmacyRepository.GetPharmacyWithMasksAsync(id);
+        //    if (pharmacy == null) return null;
 
-            return new PharmacyDto
-            {
-                Id = pharmacy.Id,
-                Name = pharmacy.Name,
-                CashBalance = pharmacy.CashBalance,
-                OpeningHours = pharmacy.OpeningHours,
-                CreatedAt = pharmacy.CreatedAt,
-                MaskTypeCount = pharmacy.Masks.Count,
-                MaskTotalCount = pharmacy.Masks.Sum(m => m.StockQuantity)
-            };
-        }
+        //    return new PharmacyDto
+        //    {
+        //        Id = pharmacy.Id,
+        //        Name = pharmacy.Name,
+        //        CashBalance = pharmacy.CashBalance,
+        //        OpeningHours = pharmacy.OpeningHours,
+        //        CreatedAt = pharmacy.CreatedAt,
+        //        MaskTypeCount = pharmacy.Masks.Count,
+        //        MaskTotalCount = pharmacy.Masks.Sum(m => m.StockQuantity)
+        //    };
+        //}
 
         public async Task<List<MaskDto>> GetPharmacyMasksAsync(int pharmacyId, string? sortBy, string? sortOrder)
         {
@@ -100,43 +101,26 @@ namespace PhantomMaskAPI.Services
             return result;
         }
 
-        public async Task<List<PharmacyDto>> SearchPharmaciesAsync(string searchTerm)
-        {
-            var pharmacies = await _pharmacyRepository.SearchPharmaciesAsync(searchTerm);
+        //public async Task<List<PharmacyDto>> SearchPharmaciesAsync(string searchTerm)
+        //{
+        //    var pharmacies = await _pharmacyRepository.SearchPharmaciesAsync(searchTerm);
 
-            var result = pharmacies.Select(p => new PharmacyDto
-            {
-                Id = p.Id,
-                Name = p.Name,
-                CashBalance = p.CashBalance,
-                OpeningHours = p.OpeningHours,
-                CreatedAt = p.CreatedAt,
-                MaskTypeCount = p.Masks.Count,
-                MaskTotalCount = p.Masks.Sum(m => m.StockQuantity)
-            }).ToList();
+        //    var result = pharmacies.Select(p => new PharmacyDto
+        //    {
+        //        Id = p.Id,
+        //        Name = p.Name,
+        //        CashBalance = p.CashBalance,
+        //        OpeningHours = p.OpeningHours,
+        //        CreatedAt = p.CreatedAt,
+        //        MaskTypeCount = p.Masks.Count,
+        //        MaskTotalCount = p.Masks.Sum(m => m.StockQuantity)
+        //    }).ToList();
 
-            _logger.LogInformation($"� 搜尋 '{searchTerm}' 找到 {result.Count} 家藥局");
-            return result;
-        }
+        //    _logger.LogInformation($"� 搜尋 '{searchTerm}' 找到 {result.Count} 家藥局");
+        //    return result;
+        //}
 
-        public async Task<List<PharmacyDto>> GetPharmaciesByStockCriteriaAsync_(decimal minPrice, decimal maxPrice, int stockThreshold, string comparison)
-        {
-            var pharmacies = await _pharmacyRepository.GetPharmaciesByStockCriteriaAsync(minPrice, maxPrice, stockThreshold, comparison);
-
-            var result = pharmacies.Select(p => new PharmacyDto
-            {
-                Id = p.Id,
-                Name = p.Name,
-                CashBalance = p.CashBalance,
-                OpeningHours = p.OpeningHours,
-                CreatedAt = p.CreatedAt,
-                MaskTypeCount = p.Masks.Count,
-                MaskTotalCount = p.Masks.Sum(m => m.StockQuantity)
-            }).ToList();
-
-            _logger.LogInformation($"🏪 符合庫存條件的藥局: {result.Count} 家");
-            return result;
-        }
+        
         public async Task<List<PharmacyDto>> GetPharmaciesByStockCriteriaAsync(
             decimal minPrice,
             decimal maxPrice,
@@ -148,7 +132,22 @@ namespace PhantomMaskAPI.Services
 
             var filtered = pharmacies.Where(p =>
             {
-                int count = p.Masks.Count;
+                // 確保 p.Masks 不為 null
+                var currentPharmacyMasks = p.Masks?? new List<Mask>();
+
+                // *** 新增價格篩選邏輯 ***
+                // 判斷該藥局是否有至少一個口罩的價格落在 minPrice 和 maxPrice 之間
+                bool priceMatches = (minPrice == 0 && maxPrice == 0) || // 如果價格範圍是預設的0-0，則不進行價格篩選
+                                    currentPharmacyMasks.Any(m => m.Price >= minPrice && m.Price <= maxPrice);
+
+                // 如果該藥局連一個符合價格條件的口罩都沒有，則直接排除
+                if (!priceMatches)
+                {
+                    return false;
+                }
+
+                // 口罩總數量篩選邏輯 (保持不變)
+                int count = currentPharmacyMasks.Sum(m => m.StockQuantity);
 
                 if (minStockThreshold.HasValue && maxStockThreshold.HasValue)
                 {
@@ -169,7 +168,7 @@ namespace PhantomMaskAPI.Services
                         : count < maxStockThreshold;
                 }
 
-                return true; // 若兩者都沒填，代表不過濾庫存數量
+                return true; // 若庫存兩者都沒填，代表不過濾庫存數量
             });
 
             var result = filtered.Select(p => new PharmacyDto
@@ -179,8 +178,8 @@ namespace PhantomMaskAPI.Services
                 CashBalance = p.CashBalance,
                 OpeningHours = p.OpeningHours,
                 CreatedAt = p.CreatedAt,
-                MaskTypeCount = p.Masks.Count,
-                MaskTotalCount = p.Masks.Sum(m => m.StockQuantity)
+                MaskTypeCount = p.Masks?.Count ?? 0, // 如果 p.Masks 為 null，則 MaskTypeCount 為 0
+                MaskTotalCount = p.Masks?.Sum(m => m.StockQuantity) ?? 0 // 如果 p.Masks 為 null，則 MaskTotalCount 為 0
             }).ToList();
 
             _logger.LogInformation($"🏪 符合庫存條件的藥局: {result.Count} 家");

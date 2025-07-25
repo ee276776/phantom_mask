@@ -19,41 +19,41 @@ namespace PhantomMaskAPI.Services
             _logger = logger;
         }
 
-        public async Task<List<MaskDto>> SearchMasksAsync(string searchTerm, int limit = 50)
-        {
-            var masks = await _maskRepository.SearchMasksAsync(searchTerm);
+        //public async Task<List<MaskDto>> SearchMasksAsync(string searchTerm, int limit = 50)
+        //{
+        //    var masks = await _maskRepository.SearchMasksAsync(searchTerm);
             
-            var result = masks.Take(limit).Select(m => new MaskDto
-            {
-                Id = m.Id,
-                Name = m.Name,
-                Price = m.Price,
-                StockQuantity = m.StockQuantity,
-                PharmacyId = m.PharmacyId,
-                PharmacyName = m.Pharmacy.Name,
-                CreatedAt = m.CreatedAt
-            }).ToList();
+        //    var result = masks.Take(limit).Select(m => new MaskDto
+        //    {
+        //        Id = m.Id,
+        //        Name = m.Name,
+        //        Price = m.Price,
+        //        StockQuantity = m.StockQuantity,
+        //        PharmacyId = m.PharmacyId,
+        //        PharmacyName = m.Pharmacy.Name,
+        //        CreatedAt = m.CreatedAt
+        //    }).ToList();
 
-            _logger.LogInformation($"🔍 搜尋口罩 '{searchTerm}' 找到 {result.Count} 個結果");
-            return result;
-        }
+        //    _logger.LogInformation($"🔍 搜尋口罩 '{searchTerm}' 找到 {result.Count} 個結果");
+        //    return result;
+        //}
 
-        public async Task<MaskDto?> GetMaskByIdAsync(int maskId)
-        {
-            var mask = await _maskRepository.GetMaskWithPharmacyAsync(maskId);
-            if (mask == null) return null;
+        //public async Task<MaskDto?> GetMaskByIdAsync(int maskId)
+        //{
+        //    var mask = await _maskRepository.GetMaskWithPharmacyAsync(maskId);
+        //    if (mask == null) return null;
 
-            return new MaskDto
-            {
-                Id = mask.Id,
-                Name = mask.Name,
-                Price = mask.Price,
-                StockQuantity = mask.StockQuantity,
-                PharmacyId = mask.PharmacyId,
-                PharmacyName = mask.Pharmacy.Name,
-                CreatedAt = mask.CreatedAt
-            };
-        }
+        //    return new MaskDto
+        //    {
+        //        Id = mask.Id,
+        //        Name = mask.Name,
+        //        Price = mask.Price,
+        //        StockQuantity = mask.StockQuantity,
+        //        PharmacyId = mask.PharmacyId,
+        //        PharmacyName = mask.Pharmacy.Name,
+        //        CreatedAt = mask.CreatedAt
+        //    };
+        //}
 
         public async Task<MaskDto?> UpdateMaskStockAsync(int maskId, StockUpdateDto stockUpdate)
         {
@@ -116,61 +116,61 @@ namespace PhantomMaskAPI.Services
         }
 
 
-        public async Task<List<MaskDto>> BulkUpdateMasksAsync(int pharmacyId, List<BulkMaskUpdateDto> maskUpdates)
-        {
-            var updatedMasks = await _maskRepository.BulkUpdateMasksAsync(pharmacyId, maskUpdates);
+        //public async Task<List<MaskDto>> BulkUpdateMasksAsync(int pharmacyId, List<BulkMaskUpdateDto> maskUpdates)
+        //{
+        //    var updatedMasks = await _maskRepository.BulkUpdateMasksAsync(pharmacyId, maskUpdates);
             
-            var result = updatedMasks.Select(m => new MaskDto
-            {
-                Id = m.Id,
-                Name = m.Name,
-                Price = m.Price,
-                StockQuantity = m.StockQuantity,
-                PharmacyId = m.PharmacyId,
-                PharmacyName = m.Pharmacy?.Name ?? "",
-                CreatedAt = m.CreatedAt
-            }).ToList();
+        //    var result = updatedMasks.Select(m => new MaskDto
+        //    {
+        //        Id = m.Id,
+        //        Name = m.Name,
+        //        Price = m.Price,
+        //        StockQuantity = m.StockQuantity,
+        //        PharmacyId = m.PharmacyId,
+        //        PharmacyName = m.Pharmacy?.Name ?? "",
+        //        CreatedAt = m.CreatedAt
+        //    }).ToList();
 
-            _logger.LogInformation($"💊 藥局 {pharmacyId} 批量更新了 {result.Count} 個口罩");
-            return result;
-        }
+        //    _logger.LogInformation($"💊 藥局 {pharmacyId} 批量更新了 {result.Count} 個口罩");
+        //    return result;
+        //}
 
-        public async Task<List<MaskDto>> GetLowStockMasksAsync(int threshold = 10)
-        {
-            var lowStockMasks = await _maskRepository.GetLowStockMasksAsync(threshold);
+        //public async Task<List<MaskDto>> GetLowStockMasksAsync(int threshold = 10)
+        //{
+        //    var lowStockMasks = await _maskRepository.GetLowStockMasksAsync(threshold);
             
-            var result = lowStockMasks.Select(m => new MaskDto
-            {
-                Id = m.Id,
-                Name = m.Name,
-                Price = m.Price,
-                StockQuantity = m.StockQuantity,
-                PharmacyId = m.PharmacyId,
-                PharmacyName = m.Pharmacy.Name,
-                CreatedAt = m.CreatedAt
-            }).ToList();
+        //    var result = lowStockMasks.Select(m => new MaskDto
+        //    {
+        //        Id = m.Id,
+        //        Name = m.Name,
+        //        Price = m.Price,
+        //        StockQuantity = m.StockQuantity,
+        //        PharmacyId = m.PharmacyId,
+        //        PharmacyName = m.Pharmacy.Name,
+        //        CreatedAt = m.CreatedAt
+        //    }).ToList();
 
-            _logger.LogInformation($"⚠️ 找到 {result.Count} 個低庫存口罩 (低於 {threshold} 個)");
-            return result;
-        }
+        //    _logger.LogInformation($"⚠️ 找到 {result.Count} 個低庫存口罩 (低於 {threshold} 個)");
+        //    return result;
+        //}
 
-        public async Task<List<MaskDto>> GetMasksInPriceRangeAsync(decimal minPrice, decimal maxPrice)
-        {
-            var masks = await _maskRepository.GetMasksInPriceRangeAsync(minPrice, maxPrice);
+        //public async Task<List<MaskDto>> GetMasksInPriceRangeAsync(decimal minPrice, decimal maxPrice)
+        //{
+        //    var masks = await _maskRepository.GetMasksInPriceRangeAsync(minPrice, maxPrice);
             
-            var result = masks.Select(m => new MaskDto
-            {
-                Id = m.Id,
-                Name = m.Name,
-                Price = m.Price,
-                StockQuantity = m.StockQuantity,
-                PharmacyId = m.PharmacyId,
-                PharmacyName = m.Pharmacy.Name,
-                CreatedAt = m.CreatedAt
-            }).ToList();
+        //    var result = masks.Select(m => new MaskDto
+        //    {
+        //        Id = m.Id,
+        //        Name = m.Name,
+        //        Price = m.Price,
+        //        StockQuantity = m.StockQuantity,
+        //        PharmacyId = m.PharmacyId,
+        //        PharmacyName = m.Pharmacy.Name,
+        //        CreatedAt = m.CreatedAt
+        //    }).ToList();
 
-            _logger.LogInformation($"💰 價格範圍 ${minPrice}-${maxPrice} 找到 {result.Count} 個口罩");
-            return result;
-        }
+        //    _logger.LogInformation($"💰 價格範圍 ${minPrice}-${maxPrice} 找到 {result.Count} 個口罩");
+        //    return result;
+        //}
     }
 }
