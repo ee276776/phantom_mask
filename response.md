@@ -13,7 +13,7 @@
 
 
 ---
-## 完成度
+## API完成度
 * [x] List pharmacies, optionally filtered by specific time and/or day of the week.  
   * Implemented at **GET /api/Pharmacies**
 * [x] List all masks sold by a given pharmacy with an option to sort by name or price.  
@@ -122,8 +122,8 @@ GET /api/Pharmacies/by-stock
 **查詢參數：**
 - `minPrice` (number, 可選): 最低價格
 - `maxPrice` (number, 可選): 最高價格
-- `minStockThreshold` (integer, 可選): 最小庫存閾值
-- `maxStockThreshold` (integer, 可選): 最大庫存閾值
+- `minStockThreshold` (integer, 可選): 藥局口罩總和最小庫存閾值
+- `maxStockThreshold` (integer, 可選): 藥局口罩總和最大庫存閾值
 - `isInclusive` (boolean, 預設: false): 是否包含等於
 
 **回應格式：** 藥局陣列 (同Q1)
@@ -492,3 +492,84 @@ curl -X GET "https://api.phantommask.com/api/Search/SearchByRelavance?query=N95"
 3. **搜尋類型**: RelevanceResultDto 中的 `type` 參數值為 `"mask"` 或 `"pharmacy"`
 4. **營業時間**: 時間格式使用 24 小時制，例如 `"08:00"` 或 `"18:00"`
 5. **星期編號**: 1=週一, 2=週二, 3=週三, 4=週四, 5=週五, 6=週六, 7=週日
+
+---
+## 測試覆蓋率報告
+
+我為所建構的 APIs 編寫了部分的單元測試。請按照以下步驟查看測試覆蓋率報告：
+
+**測試範圍說明：**
+- ✅ 已完成 Service 層的單元測試（Q1-Q5, Q8）
+- ❌ 缺少 Q6（更新口罩庫存）和 Q7（批量新增或更新口罩）的測試
+- ❌ 未包含 Controller 層的 Mock 測試
+- ❌ 僅 Mock 了部分 DTO 物件
+
+**覆蓋率限制：** 由於測試範圍有限且未涵蓋完整的測試層級，整體覆蓋率相對較低。
+
+**前提條件：** 確保您位於解決方案根目錄 `phamacy_mask`
+
+```bash
+# 移動到解決方案根目錄
+$ cd C:\phamacy_mask
+
+# 執行測試並收集覆蓋率資料
+$ dotnet test --collect:'XPlat Code Coverage'
+
+# 生成 HTML 覆蓋率報告
+$ reportgenerator -reports:"**/coverage.cobertura.xml" -targetdir:coverage-report -reporttypes:Html
+```
+
+執行這些命令後，您可以在 `coverage-report` 目錄中查看詳細的 HTML 覆蓋率報告。
+
+---
+
+## 資料匯入與部署
+
+**重要說明：** 本專案的資料匯入腳本已整合至 Docker 部署流程中，執行部署時會自動完成資料庫初始化與資料匯入作業。
+
+### 使用 Docker 部署（推薦）
+
+透過 Docker 在本地部署專案，請執行以下命令：
+
+```bash
+# 移動到 API 專案目錄
+$ cd C:\phamacy_mask\Phantom_Mask_API
+
+# 使用 docker-compose 建置並啟動服務
+# 此命令會自動執行：資料庫設定、資料匯入、API 服務啟動
+$ docker-compose up --build
+
+# API 服務將在 http://localhost:8080 上運行
+```
+
+Docker 設定包含：
+- 資料庫初始化
+- 自動從根目錄json檔案匯入資料
+- API 服務啟動
+
+#### 使用 Visual Studio 進行除錯測試
+
+如果您希望使用 Visual Studio 進行除錯，可以按照以下步驟操作：
+
+1. **啟動 Docker 環境**（僅啟動資料庫和資料匯入）：
+   ```bash
+   # 移動到 API 專案目錄
+   $ cd C:\phamacy_mask\Phantom_Mask_API
+   
+   # 啟動 Docker（資料庫會自動初始化並匯入資料）
+   $ docker-compose up --build
+   ```
+
+2. **使用 Visual Studio 除錯**：
+   - 開啟 Visual Studio 2022
+   - 載入解決方案檔案 `C:\Exam\phamacy_mask\phamacy_mask.sln`
+   - 設定 `Phantom_Mask_API` 為啟始專案
+   - 按 F5 或點擊「開始除錯」按鈕
+   - **連線字串已預先配置**，可直接連接到 Docker 中的資料庫
+
+3. **測試 API**：
+   - Visual Studio 除錯模式下,打開瀏覽器輸入 `http://localhost:80`
+   - 可以使用 Swagger UI 或 Postman 進行 API 測試
+   - 資料庫中已包含透過 Docker 匯入的測試資料
+
+**注意**：此方式結合了 Docker 的資料庫環境優势與 Visual Studio 的除錯便利性，適合開發和測試階段使用。
